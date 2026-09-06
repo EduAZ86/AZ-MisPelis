@@ -34,7 +34,7 @@ export function useGetSeries(criterion: SeriesCriterion = "tv-popular") {
       return (lastPage.page ?? 1) + 1;
     },
     select: (data) => ({
-      pages: data.pages.map((p) => p.results),
+      pages: data.pages.map((p) => p.results.map((r) => ({ ...r, media_type: r.media_type ?? "tv" }))),
       pageParams: data.pageParams,
     }),
   });

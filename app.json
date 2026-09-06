@@ -28,6 +28,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-screen-orientation",
       "react-native-video"
     ],
     "extra": {

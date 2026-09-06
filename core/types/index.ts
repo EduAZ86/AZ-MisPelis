@@ -21,7 +21,7 @@ export interface StreamSource {
   key: string;
   url: string;
   headers: Record<string, string>;
-  provider: "hackstore" | "seriesmetro";
+  provider: "streamguide" | "hackstore" | "seriesmetro";
   mirror: string;
   language: LatinoSourceLanguage;
   quality: string;
@@ -62,6 +62,21 @@ export interface TmdbVideo {
   site: string;
   type: string;
   official: boolean;
+}
+
+export interface TmdbEpisode {
+  id: number;
+  episode_number: number;
+  name: string;
+  overview: string;
+  still_path: string | null;
+  air_date: string | null;
+  runtime: number | null;
+  vote_average: number;
+}
+
+export interface TmdbSeasonEpisodes {
+  episodes: TmdbEpisode[];
 }
 
 export interface TmdbTitles {

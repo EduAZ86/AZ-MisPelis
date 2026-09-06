@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import React, { useEffect, useCallback, useState } from "react";
+import { View, StyleSheet, Text, useWindowDimensions } from "react-native";
 import { VideoView, VideoPlayer, useVideoPlayer, type VideoConfig } from "react-native-video";
+import * as ScreenOrientation from "expo-screen-orientation";
 import { SourcePicker } from "../source-picker/SourcePicker";
 import type { StreamSource } from "@core/types";
 
@@ -40,6 +41,9 @@ interface VideoPlayerInnerProps {
 }
 
 function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackError }: VideoPlayerInnerProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
   const sourceConfig: VideoConfig = {
     uri: currentSource.url,
     headers: currentSource.headers,
@@ -56,17 +60,40 @@ function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackErro
     player.play();
   }, [player]);
 
+  useEffect(() => {
+    return () => {
+      ScreenOrientation.unlockAsync().catch(() => {});
+    };
+  }, []);
+
+  const handleFullscreenChange = useCallback((fullscreen: boolean) => {
+    setIsFullscreen(fullscreen);
+    if (fullscreen) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
+    } else {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
+    }
+  }, []);
+
+  const isLandscape = windowWidth > windowHeight;
+  const videoStyle = isFullscreen || isLandscape
+    ? { width: windowWidth, height: windowHeight }
+    : styles.video;
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, (isFullscreen || isLandscape) && styles.overlayContainer]}>
       <VideoView
-        style={styles.video}
+        style={videoStyle}
         player={player}
         controls={true}
-        resizeMode="cover"
+        resizeMode="contain"
         pictureInPicture={true}
+        onFullscreenChange={handleFullscreenChange}
       />
       {playbackError && <Text style={styles.playbackError}>{playbackError}</Text>}
-      <SourcePicker sources={sources} currentKey={currentSource.key} onSelect={onSelectSource} />
+      {!isFullscreen && (
+        <SourcePicker sources={sources} currentKey={currentSource.key} onSelect={onSelectSource} />
+      )}
     </View>
   );
 }
@@ -75,7 +102,7 @@ export type { VideoPlayer };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
+  overlayContainer: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, justifyContent: "center", alignItems: "center" },
   video: { width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000" },
-  loadingText: { color: "#fff", marginTop: 12, textAlign: "center" },
   playbackError: { color: "#f44", padding: 8, textAlign: "center" },
 });

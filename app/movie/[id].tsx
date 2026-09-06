@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getImageUrl } from "@services/tmdb";
 import { useGetDetail, useGetServers, useServerSelection } from "@features/catalog";
 import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
+import { NavHeader } from "@core/components/NavHeader";
+import { theme } from "@core/theme";
 import type { StreamSource } from "@core/types";
+
+const { colors, radius } = theme;
 
 export default function MovieScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,6 +87,7 @@ export default function MovieScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NavHeader showBack showFavorites />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.backdropContainer}>
           {backdrop && <Image source={{ uri: backdrop }} style={styles.backdrop} />}
@@ -205,7 +211,7 @@ export default function MovieScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
   backdropContainer: { position: "relative", height: 300 },
@@ -215,55 +221,55 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   headerContent: { flex: 1, flexDirection: "row", padding: 16, alignItems: "flex-end", gap: 16 },
-  poster: { width: 120, height: 180, borderRadius: 8, borderWidth: 1, borderColor: "#333" },
+  poster: { width: 120, height: 180, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },
   titleContainer: { flex: 1, justifyContent: "flex-end", paddingBottom: 8 },
-  title: { color: "#fff", fontSize: 22, fontWeight: "800" },
-  year: { color: "#aaa", fontSize: 14, marginTop: 2 },
-  genres: { color: "#888", fontSize: 13, marginTop: 4 },
+  title: { color: colors.text, fontSize: 22, fontWeight: "800" },
+  year: { color: colors.creamMuted, fontSize: 14, marginTop: 2 },
+  genres: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
   actions: { flexDirection: "row", gap: 10, marginTop: 12 },
-  btn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: "center", minWidth: 100 },
-  btnPrimary: { backgroundColor: "#4CAF50" },
-  btnOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#4CAF50" },
-  btnActive: { backgroundColor: "#FFD700", borderColor: "#FFD700" },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  btn: { flex: 1, paddingVertical: 10, borderRadius: radius.md, alignItems: "center", minWidth: 100 },
+  btnPrimary: { backgroundColor: colors.primary },
+  btnOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.primary },
+  btnActive: { backgroundColor: colors.gold, borderColor: colors.gold },
+  btnText: { color: colors.text, fontWeight: "600", fontSize: 14 },
   playBtn: { marginTop: 12, width: "100%" },
   section: { paddingHorizontal: 16, marginTop: 16 },
-  sectionTitle: { color: "#fff", fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  overview: { color: "#ccc", fontSize: 14, lineHeight: 22 },
-  error: { color: "#f44", marginTop: 8, textAlign: "center" },
+  sectionTitle: { color: colors.cream, fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  overview: { color: colors.textMuted, fontSize: 14, lineHeight: 22 },
+  error: { color: colors.danger, marginTop: 8, textAlign: "center" },
   retry: { color: "#4CAF50", marginTop: 8, textDecorationLine: "underline" },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
   filterLabel: { color: "#aaa", marginRight: 8, alignSelf: "center" },
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "#1e1e1e",
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: colors.border,
   },
-  filterChipActive: { backgroundColor: "#4CAF50", borderColor: "#4CAF50" },
+  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   filterChipText: { color: "#fff", fontSize: 12, fontWeight: "500" },
   sourceItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#1e1e1e",
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: colors.border,
   },
-  sourceItemSelected: { borderColor: "#4CAF50", backgroundColor: "#1a3a1a" },
+  sourceItemSelected: { borderColor: colors.primary, backgroundColor: "#1a3a1a" },
   sourceInfo: { flexDirection: "row", gap: 12, flex: 1 },
-  sourceLanguage: { color: "#4CAF50", fontWeight: "600", fontSize: 13 },
-  sourceServer: { color: "#aaa", fontSize: 13 },
-  sourceQuality: { color: "#888", fontSize: 12 },
+  sourceLanguage: { color: colors.primary, fontWeight: "600", fontSize: 13 },
+  sourceServer: { color: colors.creamMuted, fontSize: 13 },
+  sourceQuality: { color: colors.textMuted, fontSize: 12 },
   sourceSelectedIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primary,
   },
 });

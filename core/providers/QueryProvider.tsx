@@ -41,12 +41,11 @@ function createQueryClient(): QueryClient {
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(createQueryClient);
-  const [persister] = useState(
-    () =>
-      createAsyncStoragePersister({
-        storage: AsyncStorage,
-        throttleTime: 1000 * 60,
-      })
+  const [persister] = useState(() =>
+    createAsyncStoragePersister({
+      storage: AsyncStorage,
+      throttleTime: 1000 * 60,
+    }),
   );
 
   useEffect(() => {
@@ -60,9 +59,12 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     onlineManager.setEventListener((setOnline) => {
-      const appStateSubscription = AppState.addEventListener("change", (status) => {
-        setOnline(status === "active");
-      });
+      const appStateSubscription = AppState.addEventListener(
+        "change",
+        (status) => {
+          setOnline(status === "active");
+        },
+      );
       return () => appStateSubscription.remove();
     });
   }, []);

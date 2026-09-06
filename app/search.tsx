@@ -1,9 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TextInput, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Image, SafeAreaView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, TextInput, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useGetSearch } from "@features/catalog";
 import { getImageUrl } from "@services/tmdb";
+import { NavHeader } from "@core/components/NavHeader";
+import { theme } from "@core/theme";
 import type { TmdbMedia } from "@core/types";
+
+const { colors, radius } = theme;
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -49,6 +54,7 @@ export default function SearchScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NavHeader showBack title="Buscar" />
       <View style={styles.searchBar}>
         <TextInput
           style={styles.input}
@@ -56,7 +62,7 @@ export default function SearchScreen() {
           value={query}
           onChangeText={handleSearch}
           autoFocus
-          placeholderTextColor="#666"
+          placeholderTextColor={colors.textFaint}
         />
       </View>
       {query.length >= 2 && (
@@ -67,7 +73,7 @@ export default function SearchScreen() {
           contentContainerStyle={styles.listContent}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={hasNextPage && isFetchingNextPage ? <ActivityIndicator size="small" color="#fff" style={styles.footerLoader} /> : null}
+          ListFooterComponent={hasNextPage && isFetchingNextPage ? <ActivityIndicator size="small" color={colors.primary} style={styles.footerLoader} /> : null}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
@@ -78,26 +84,28 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.background },
   searchBar: { padding: 12 },
   input: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: "#fff",
+    color: colors.text,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   listContent: { padding: 12, paddingBottom: 24 },
-  resultItem: { flexDirection: "row", backgroundColor: "#1e1e1e", borderRadius: 8, overflow: "hidden" },
+  resultItem: { flexDirection: "row", backgroundColor: colors.surface, borderRadius: radius.md, overflow: "hidden", borderWidth: 1, borderColor: colors.border },
   resultPoster: { width: 80, height: 120 },
-  placeholder: { backgroundColor: "#2a2a2a" },
+  placeholder: { backgroundColor: colors.surfaceAlt },
   resultInfo: { flex: 1, padding: 12, justifyContent: "center" },
-  resultTitle: { color: "#fff", fontSize: 15, fontWeight: "600", marginBottom: 4 },
-  resultMeta: { color: "#aaa", fontSize: 13 },
-  resultType: { color: "#4CAF50", fontSize: 12, marginTop: 4 },
+  resultTitle: { color: colors.text, fontSize: 15, fontWeight: "600", marginBottom: 4 },
+  resultMeta: { color: colors.textMuted, fontSize: 13 },
+  resultType: { color: colors.primary, fontSize: 12, marginTop: 4 },
   separator: { height: 8 },
   footerLoader: { padding: 16 },
-  empty: { color: "#666", textAlign: "center", marginTop: 24 },
-  error: { color: "#f44", textAlign: "center", marginTop: 24 },
+  empty: { color: colors.textFaint, textAlign: "center", marginTop: 24 },
+  error: { color: colors.danger, textAlign: "center", marginTop: 24 },
 });

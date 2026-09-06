@@ -80,7 +80,7 @@ export async function fetchTVCredits(id: number): Promise<{ cast: TmdbCast[] }> 
   return tmdbFetch(`/tv/${id}/credits`);
 }
 
-export function getImageUrl(path: string | null, size: "w200" | "w342" | "w500" | "w780" | "original" = "w342"): string {
+export function getImageUrl(path: string | null, size: "w200" | "w300" | "w342" | "w500" | "w780" | "original" = "w342"): string {
   if (!path) return "";
   return `${IMAGE_BASE}/${size}${path}`;
 }

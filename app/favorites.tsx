@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useFavorites, type FavoriteItem, useContinueWatching, type ContinueWatchingItem } from "@features/favorites";
+import { NavHeader } from "@core/components/NavHeader";
+import { theme } from "@core/theme";
+
+const { colors, radius } = theme;
 
 type LibraryItem = FavoriteItem | ContinueWatchingItem;
 
@@ -56,8 +61,8 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NavHeader showBack title="Mi biblioteca" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mi biblioteca</Text>
         <View style={styles.tabs}>
           <TouchableOpacity style={[styles.tab, activeTab === "favs" && styles.tabActive]} onPress={() => setActiveTab("favs")}>
             <Text style={[styles.tabText, activeTab === "favs" && styles.tabTextActive]}>Favoritos ({favorites.length})</Text>
@@ -89,25 +94,25 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.background },
   header: { padding: 16 },
-  headerTitle: { color: "#fff", fontSize: 28, fontWeight: "800", marginBottom: 12 },
+  headerTitle: { color: colors.cream, fontSize: 28, fontWeight: "800", marginBottom: 12 },
   tabs: { flexDirection: "row", gap: 8 },
-  tab: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "#1e1e1e", borderRadius: 20 },
-  tabActive: { backgroundColor: "#4CAF50" },
-  tabText: { color: "#aaa", fontSize: 13, fontWeight: "500" },
-  tabTextActive: { color: "#fff", fontWeight: "700" },
+  tab: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.surface, borderRadius: radius.pill },
+  tabActive: { backgroundColor: colors.primary },
+  tabText: { color: colors.textMuted, fontSize: 13, fontWeight: "500" },
+  tabTextActive: { color: colors.text, fontWeight: "700" },
   listContent: { paddingHorizontal: 4, paddingBottom: 24 },
-  card: { width: "30%", marginRight: "3%", marginBottom: 16, borderRadius: 8, overflow: "hidden", backgroundColor: "#1e1e1e", position: "relative" },
+  card: { width: "30%", marginRight: "3%", marginBottom: 16, borderRadius: 8, overflow: "hidden", backgroundColor: colors.surface, position: "relative", borderWidth: 1, borderColor: colors.border },
   poster: { width: "100%", height: 160 },
-  placeholder: { backgroundColor: "#2a2a2a" },
-  overlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 8, backgroundColor: "rgba(0,0,0,0.8)" },
-  title: { color: "#fff", fontSize: 11, fontWeight: "600", marginBottom: 2 },
-  episode: { color: "#4CAF50", fontSize: 10 },
-  progressBar: { height: 3, backgroundColor: "#333", borderRadius: 1.5, marginTop: 4, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#4CAF50" },
-  removeBtn: { position: "absolute", top: 4, right: 4, width: 24, height: 24, borderRadius: 12, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center" },
+  placeholder: { backgroundColor: colors.surfaceAlt },
+  overlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 8, backgroundColor: colors.overlay },
+  title: { color: colors.text, fontSize: 11, fontWeight: "600", marginBottom: 2 },
+  episode: { color: colors.gold, fontSize: 10 },
+  progressBar: { height: 3, backgroundColor: colors.border, borderRadius: 1.5, marginTop: 4, overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: colors.primary },
+  removeBtn: { position: "absolute", top: 4, right: 4, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primaryDark, alignItems: "center", justifyContent: "center" },
   removeBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
   empty: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
-  emptyText: { color: "#666", fontSize: 16, textAlign: "center" },
+  emptyText: { color: colors.textFaint, fontSize: 16, textAlign: "center" },
 });

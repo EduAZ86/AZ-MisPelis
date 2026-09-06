@@ -1,9 +1,13 @@
 import { tmdbFetch } from "./client";
-import type { TmdbDetail, TmdbTitles } from "@core/types";
+import type { TmdbDetail, TmdbTitles, TmdbSeasonEpisodes } from "@core/types";
 
 export async function fetchDetail(type: "movie" | "tv", id: number): Promise<TmdbDetail> {
   const path = type === "movie" ? `/movie/${id}` : `/tv/${id}`;
   return tmdbFetch<TmdbDetail>(path, { append_to_response: "credits,videos" });
+}
+
+export async function fetchSeasonEpisodes(id: number, season: number): Promise<TmdbSeasonEpisodes> {
+  return tmdbFetch<TmdbSeasonEpisodes>(`/tv/${id}/season/${season}`, { language: "es-MX" });
 }
 
 async function fetchTitle(id: number, type: "movie" | "tv", lang: string): Promise<string> {

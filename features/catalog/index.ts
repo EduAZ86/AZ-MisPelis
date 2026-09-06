@@ -7,6 +7,7 @@ export {
   useGetSearch,
   useGetDetail,
   useGetServers,
+  useGetSeason,
   useServerSelection,
   useCatalogFilters,
   queryKeys,

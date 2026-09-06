@@ -4,6 +4,9 @@ import { StatusBar } from "expo-status-bar";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { QueryProvider } from "@core/providers/QueryProvider";
 import { Toaster } from "sonner-native";
+import { theme } from "@core/theme";
+
+const { colors, radius } = theme;
 
 export default function RootLayout() {
   return (
@@ -12,7 +15,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#0a0a0a" },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="index" />
@@ -24,7 +27,7 @@ export default function RootLayout() {
       <Toaster
         position="top-center"
         toastOptions={{
-          style: { backgroundColor: "#1e1e1e" },
+          style: { backgroundColor: colors.surface },
           descriptionStyle: { color: "#fff" },
         }}
       />
@@ -50,19 +53,19 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => voi
 const boundaryStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
   },
   emoji: { fontSize: 48, marginBottom: 16 },
-  title: { color: "#fff", fontSize: 22, fontWeight: "800", marginBottom: 8 },
-  message: { color: "#888", fontSize: 14, textAlign: "center", marginBottom: 24 },
+  title: { color: colors.cream, fontSize: 22, fontWeight: "800", marginBottom: 8 },
+  message: { color: colors.textMuted, fontSize: 14, textAlign: "center", marginBottom: 24 },
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
   },
-  buttonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  buttonText: { color: colors.text, fontWeight: "700", fontSize: 15 },
 });

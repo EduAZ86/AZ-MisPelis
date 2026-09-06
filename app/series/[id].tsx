@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, FlatList } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getImageUrl } from "@services/tmdb";
-import { useGetDetail, useGetServers, useServerSelection } from "@features/catalog";
+import { useGetDetail, useGetServers, useGetSeason, useServerSelection } from "@features/catalog";
 import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
-import type { StreamSource } from "@core/types";
+import { NavHeader } from "@core/components/NavHeader";
+import { theme } from "@core/theme";
+import type { StreamSource, TmdbEpisode } from "@core/types";
+
+const { colors, radius } = theme;
 
 export default function TVScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,6 +30,8 @@ export default function TVScreen() {
       { type: "tv", id: tvId, season: selectedSeason, episode: selectedEpisode },
       showSources
     );
+
+  const { data: episodes, isLoading: episodesLoading } = useGetSeason(tvId, selectedSeason);
 
   useApiErrors([detailError]);
 
@@ -76,7 +83,11 @@ export default function TVScreen() {
   };
 
   if (isLoading) {
-    return <View style={styles.centered}><ActivityIndicator size="large" color="#fff" /></View>;
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   if (isError || !detail) {
@@ -97,6 +108,7 @@ export default function TVScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NavHeader showBack showFavorites />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.backdropContainer}>
           {backdrop && <Image source={{ uri: backdrop }} style={styles.backdrop} />}
@@ -148,28 +160,41 @@ export default function TVScreen() {
           </View>
         )}
 
-        {currentSeasonData && (
+        {(currentSeasonData || episodesLoading) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Episodios - Temporada {selectedSeason}</Text>
-            <FlatList
-              data={Array.from({ length: episodeCount }, (_, i) => i + 1)}
-              keyExtractor={(ep: number) => String(ep)}
-              renderItem={({ item }: { item: number }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.episodeBtn,
-                    selectedEpisode === item && styles.episodeBtnActive,
-                  ]}
-                  onPress={() => handleEpisodePress(item)}
-                >
-                  <Text style={[styles.episodeBtnText, selectedEpisode === item && styles.episodeBtnTextActive]}>
-                    Ep. {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              numColumns={5}
-              contentContainerStyle={styles.episodeGridContent}
-            />
+            {episodesLoading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={styles.episodesLoader} />
+            ) : episodes && episodes.length > 0 ? (
+              <View style={styles.episodeGrid}>
+                {episodes.map((ep: TmdbEpisode) => (
+                  <EpisodeCard
+                    key={ep.id}
+                    episode={ep}
+                    selected={selectedEpisode === ep.episode_number}
+                    onPress={() => handleEpisodePress(ep.episode_number)}
+                  />
+                ))}
+              </View>
+            ) : (
+              <View style={styles.episodeGrid}>
+                {Array.from({ length: episodeCount }, (_, i) => i + 1).map((ep: number) => (
+                  <TouchableOpacity
+                    key={ep}
+                    style={[
+                      styles.episodeBtn,
+                      selectedEpisode === ep && styles.episodeBtnActive,
+                    ]}
+                    onPress={() => handleEpisodePress(ep)}
+                  >
+                    <View style={[styles.episodePlaceholder]}>
+                      <Text style={styles.episodePlaceholderNumber}>{ep}</Text>
+                    </View>
+                    <Text style={styles.episodeName} numberOfLines={1}>Episodio {ep}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         )}
 
@@ -177,7 +202,7 @@ export default function TVScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Fuentes disponibles</Text>
             {serversLoading ? (
-              <ActivityIndicator size="large" color="#4CAF50" style={styles.centered} />
+              <ActivityIndicator size="large" color={colors.primary} style={styles.centered} />
             ) : serversError ? (
               <Text style={styles.error}>Error al cargar fuentes</Text>
             ) : (
@@ -263,71 +288,122 @@ export default function TVScreen() {
   );
 }
 
+function EpisodeCard({
+  episode,
+  selected,
+  onPress,
+}: {
+  episode: TmdbEpisode;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  const still = getImageUrl(episode.still_path, "w300");
+  return (
+    <TouchableOpacity
+      style={[styles.episodeCard, selected && styles.episodeCardSelected]}
+      onPress={onPress}
+    >
+      <View style={styles.episodeThumbWrap}>
+        {still ? (
+          <Image source={{ uri: still }} style={styles.episodeThumb} />
+        ) : (
+          <View style={[styles.episodeThumb, styles.episodeThumbEmpty]}>
+            <Text style={styles.episodePlaceholderNumber}>{episode.episode_number}</Text>
+          </View>
+        )}
+        <View style={styles.episodeBadge}>
+          <Text style={styles.episodeBadgeText}>{episode.episode_number}</Text>
+        </View>
+        {selected && <View style={styles.episodeSelectedRing} />}
+      </View>
+      <Text style={styles.episodeName} numberOfLines={2}>{episode.name || `Episodio ${episode.episode_number}`}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
   backdropContainer: { position: "relative", height: 300 },
   backdrop: { ...StyleSheet.absoluteFill },
-  gradient: { ...StyleSheet.absoluteFill, backgroundColor: "transparent" },
+  gradient: { ...StyleSheet.absoluteFill, backgroundColor: colors.overlay },
   headerContent: { flex: 1, flexDirection: "row", padding: 16, alignItems: "flex-end", gap: 16 },
-  poster: { width: 120, height: 180, borderRadius: 8, borderWidth: 1, borderColor: "#333" },
+  poster: { width: 120, height: 180, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primaryDark },
   titleContainer: { flex: 1, justifyContent: "flex-end", paddingBottom: 8 },
-  title: { color: "#fff", fontSize: 22, fontWeight: "800" },
-  year: { color: "#aaa", fontSize: 14, marginTop: 2 },
-  genres: { color: "#888", fontSize: 13, marginTop: 4 },
-  btn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8, alignItems: "center" },
-  btnPrimary: { backgroundColor: "#4CAF50" },
-  btnOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#4CAF50" },
-  btnActive: { backgroundColor: "#FFD700", borderColor: "#FFD700" },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  title: { color: colors.text, fontSize: 22, fontWeight: "800" },
+  year: { color: colors.creamMuted, fontSize: 14, marginTop: 2 },
+  genres: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
+  btn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: radius.md, alignItems: "center" },
+  btnPrimary: { backgroundColor: colors.primary },
+  btnOutline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary },
+  btnActive: { backgroundColor: colors.gold, borderColor: colors.gold },
+  btnText: { color: colors.text, fontWeight: "600", fontSize: 14 },
   playBtn: { marginTop: 12, width: "100%" },
   section: { paddingHorizontal: 16, marginTop: 16 },
-  sectionTitle: { color: "#fff", fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  overview: { color: "#ccc", fontSize: 14, lineHeight: 22 },
-  error: { color: "#f44", marginTop: 8, textAlign: "center" },
+  sectionTitle: { color: colors.cream, fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  overview: { color: colors.textMuted, fontSize: 14, lineHeight: 22 },
+  error: { color: colors.danger, marginTop: 8, textAlign: "center" },
   seasonListContent: { paddingHorizontal: 16, gap: 8 },
-  seasonBtn: { paddingVertical: 8, paddingHorizontal: 16, backgroundColor: "#1e1e1e", borderRadius: 20, borderWidth: 1, borderColor: "#333" },
-  seasonBtnActive: { backgroundColor: "#4CAF50", borderColor: "#4CAF50" },
-  seasonBtnText: { color: "#fff", fontSize: 13, fontWeight: "500" },
-  seasonBtnTextActive: { color: "#fff", fontWeight: "700" },
-  episodeGridContent: { paddingHorizontal: 16, gap: 8 },
-  episodeBtn: { flex: 1, minWidth: 60, paddingVertical: 10, backgroundColor: "#1e1e1e", borderRadius: 8, alignItems: "center", borderWidth: 1, borderColor: "#333" },
-  episodeBtnActive: { backgroundColor: "#4CAF50", borderColor: "#4CAF50" },
-  episodeBtnText: { color: "#fff", fontSize: 12, fontWeight: "500" },
-  episodeBtnTextActive: { color: "#fff", fontWeight: "700" },
+  seasonBtn: { paddingVertical: 8, paddingHorizontal: 16, backgroundColor: colors.surface, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border },
+  seasonBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  seasonBtnText: { color: colors.text, fontSize: 13, fontWeight: "500" },
+  seasonBtnTextActive: { color: colors.text, fontWeight: "700" },
+  episodesLoader: { marginTop: 16 },
+  episodeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 0 },
+  episodeCard: { width: "47.5%", borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
+  episodeCardSelected: { borderColor: colors.primary, backgroundColor: colors.surfaceAlt },
+  episodeThumbWrap: { position: "relative" },
+  episodeThumb: { width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt },
+  episodeThumbEmpty: { alignItems: "center", justifyContent: "center" },
+  episodePlaceholderNumber: { color: colors.textFaint, fontSize: 22, fontWeight: "800" },
+  episodeBadge: {
+    position: "absolute",
+    bottom: 6,
+    left: 6,
+    backgroundColor: colors.overlay,
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  episodeBadgeText: { color: colors.cream, fontSize: 11, fontWeight: "700" },
+  episodeSelectedRing: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderWidth: 3, borderColor: colors.primary, borderRadius: radius.md },
+  episodeName: { color: colors.text, fontSize: 12, fontWeight: "500", padding: 8, minHeight: 44 },
+  episodeBtn: { flex: 1, minWidth: 60, paddingVertical: 10, backgroundColor: colors.surface, borderRadius: radius.md, alignItems: "center", borderWidth: 1, borderColor: colors.border },
+  episodeBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  episodePlaceholder: { width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt, alignItems: "center", justifyContent: "center", borderRadius: radius.sm },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  filterLabel: { color: "#aaa", marginRight: 8, alignSelf: "center" },
+  filterLabel: { color: colors.textMuted, marginRight: 8, alignSelf: "center" },
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "#1e1e1e",
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: colors.border,
   },
-  filterChipActive: { backgroundColor: "#4CAF50", borderColor: "#4CAF50" },
-  filterChipText: { color: "#fff", fontSize: 12, fontWeight: "500" },
+  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filterChipText: { color: colors.text, fontSize: 12, fontWeight: "500" },
   sourceItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#1e1e1e",
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: colors.border,
   },
-  sourceItemSelected: { borderColor: "#4CAF50", backgroundColor: "#1a3a1a" },
+  sourceItemSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   sourceInfo: { flexDirection: "row", gap: 12, flex: 1 },
-  sourceLanguage: { color: "#4CAF50", fontWeight: "600", fontSize: 13 },
-  sourceServer: { color: "#aaa", fontSize: 13 },
-  sourceQuality: { color: "#888", fontSize: 12 },
+  sourceLanguage: { color: colors.primary, fontWeight: "600", fontSize: 13 },
+  sourceServer: { color: colors.creamMuted, fontSize: 13 },
+  sourceQuality: { color: colors.textMuted, fontSize: 12 },
   sourceSelectedIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primary,
   },
 });

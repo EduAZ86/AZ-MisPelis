@@ -1,7 +1,12 @@
 import React from "react";
-import { View, ScrollView, Text, ActivityIndicator, RefreshControl, StyleSheet, SafeAreaView } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { CatalogSectionRow, type CatalogSection } from "@features/catalog";
+import { NavHeader } from "@core/components/NavHeader";
+import { theme } from "@core/theme";
+
+const { colors } = theme;
 
 const SECTIONS: { section: CatalogSection; title: string }[] = [
   { section: "trending", title: "Tendencias esta semana" },
@@ -21,13 +26,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NavHeader logo title="misPelis" showFavorites />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>misPelis</Text>
-        </View>
         {SECTIONS.map(({ section, title }) => (
           <CatalogSectionRow
             key={section}
@@ -42,8 +45,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { paddingBottom: 24 },
-  header: { padding: 16 },
-  headerTitle: { color: "#fff", fontSize: 28, fontWeight: "800" },
 });

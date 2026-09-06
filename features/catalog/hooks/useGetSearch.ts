@@ -14,7 +14,11 @@ export function useGetSearch(query: string) {
       return (lastPage.page ?? 1) + 1;
     },
     select: (data) => ({
-      pages: data.pages.map((p) => p.results),
+      pages: data.pages.map((p) =>
+        p.results
+          .filter((r) => r.media_type === "movie" || r.media_type === "tv")
+          .map((r) => ({ ...r, media_type: r.media_type ?? "movie" }))
+      ),
       pageParams: data.pageParams,
     }),
   });

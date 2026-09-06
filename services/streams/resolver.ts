@@ -1,16 +1,22 @@
 import { getLatinoSources } from "@services/hackstore";
 import { getSeriesMetroSources } from "@services/seriesmetro";
+import { getStreamGuideSources } from "@services/streamguide";
 import { getCached, setCache, withDedupe, keyOf } from "./cache";
 import { AppError } from "@core/errors";
 import type { StreamInput, StreamSource } from "@core/types";
 
 async function fetchAllSources(input: StreamInput): Promise<StreamSource[]> {
-  const [hackstoreSources, seriesmetroSources] = await Promise.allSettled([
+  const [streamguide, hackstoreSources, seriesmetroSources] = await Promise.allSettled([
+    getStreamGuideSources(input),
     getLatinoSources(input),
     getSeriesMetroSources(input),
   ]);
 
   const results: StreamSource[] = [];
+
+  if (streamguide.status === "fulfilled") {
+    results.push(...streamguide.value);
+  }
 
   if (hackstoreSources.status === "fulfilled") {
     results.push(...hackstoreSources.value);
@@ -42,8 +48,11 @@ export async function resolveStreams(input: StreamInput): Promise<StreamSource[]
 function prioritizeSources(sources: StreamSource[]): StreamSource[] {
   const langOrder: Record<string, number> = { Latino: 0, Español: 1, Castellano: 1, Subtitulado: 2, Inglés: 3 };
   const qualityOrder = (q: string) => (q === "1080p" ? 0 : q === "720p" ? 1 : 2);
+  const providerOrder = (p: string) => (p === "streamguide" ? 0 : 1);
 
   return [...sources].sort((a, b) => {
+    const providerDiff = providerOrder(a.provider) - providerOrder(b.provider);
+    if (providerDiff !== 0) return providerDiff;
     const langDiff = (langOrder[a.language] ?? 4) - (langOrder[b.language] ?? 4);
     if (langDiff !== 0) return langDiff;
     return qualityOrder(a.quality) - qualityOrder(b.quality);
