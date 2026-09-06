@@ -5,7 +5,6 @@ import {
   fetchTopRatedMovies,
 } from "@services/tmdb";
 import { queryKeys, type CatalogSection } from "./queryKeys";
-import type { TmdbMedia } from "@core/types";
 
 type MovieCriterion = "trending" | "movie-popular" | "movie-top";
 

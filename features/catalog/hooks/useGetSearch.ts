@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { searchCatalog } from "@services/tmdb";
 import { queryKeys } from "./queryKeys";
-import type { TmdbMedia } from "@core/types";
 
 export function useGetSearch(query: string) {
   return useInfiniteQuery({

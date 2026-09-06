@@ -98,3 +98,22 @@ export interface ContinueWatchingItem {
   episode?: number;
   addedAt: number;
 }
+
+export interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
+export type CatalogSortBy =
+  | "popularity.desc"
+  | "vote_average.desc"
+  | "release_date.desc"
+  | "first_air_date.desc"
+  | "revenue.desc"
+  | "vote_count.desc";
+
+export interface CatalogFilters {
+  genre: number | null;
+  year: number | null;
+  sortBy: CatalogSortBy;
+}

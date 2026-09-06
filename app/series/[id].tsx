@@ -8,12 +8,13 @@ import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
 import { NavHeader } from "@core/components/NavHeader";
-import { theme } from "@core/theme";
+import { useTheme } from "@core/providers/ThemeProvider";
+import type { ThemeTokens } from "@core/theme";
 import type { StreamSource, TmdbEpisode } from "@core/types";
 
-const { colors, radius } = theme;
-
 export default function TVScreen() {
+  const { colors, radius } = useTheme();
+  const styles = React.useMemo(() => createSeriesStyles(colors, radius), [colors, radius]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const tvId = Number(id);
   const { toggle, isFavorite } = useFavorites();
@@ -297,6 +298,8 @@ function EpisodeCard({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { colors, radius } = useTheme();
+  const styles = React.useMemo(() => createSeriesStyles(colors, radius), [colors, radius]);
   const still = getImageUrl(episode.still_path, "w300");
   return (
     <TouchableOpacity
@@ -321,7 +324,8 @@ function EpisodeCard({
   );
 }
 
-const styles = StyleSheet.create({
+function createSeriesStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["radius"]) {
+  return StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
@@ -407,3 +411,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
 });
+}

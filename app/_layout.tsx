@@ -3,35 +3,46 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { QueryProvider } from "@core/providers/QueryProvider";
+import { ThemeProvider, useTheme } from "@core/providers/ThemeProvider";
 import { Toaster } from "sonner-native";
 import { theme } from "@core/theme";
 
-const { colors, radius } = theme;
+const { colors } = theme;
 
 export default function RootLayout() {
   return (
-    <QueryProvider>
-      <StatusBar style="light" />
+    <ThemeProvider>
+      <QueryProvider>
+        <RootNavigation />
+      </QueryProvider>
+    </ThemeProvider>
+  );
+}
+
+function RootNavigation() {
+  const { colors, mode } = useTheme();
+  return (
+    <>
+      <StatusBar style={mode === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.background },
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="search" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="movie/[id]" />
         <Stack.Screen name="series/[id]" />
-        <Stack.Screen name="favorites" />
+        <Stack.Screen name="settings" />
       </Stack>
       <Toaster
         position="top-center"
         toastOptions={{
           style: { backgroundColor: colors.surface },
-          descriptionStyle: { color: "#fff" },
+          descriptionStyle: { color: colors.text },
         }}
       />
-    </QueryProvider>
+    </>
   );
 }
 

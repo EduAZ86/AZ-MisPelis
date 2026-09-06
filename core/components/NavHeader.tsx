@@ -1,10 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { theme } from "@core/theme";
-
-const { colors, radius } = theme;
+import { Ionicons } from "@expo/vector-icons";
+import { GlassPanel } from "@core/components/Glass";
+import { useTheme } from "@core/providers/ThemeProvider";
 
 interface NavHeaderProps {
   title?: string;
@@ -16,37 +15,51 @@ interface NavHeaderProps {
 
 export function NavHeader({ title, showBack = false, showFavorites = false, logo = false, rightElement }: NavHeaderProps) {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { colors, glass, radius } = useTheme();
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 6 }]}>
+    <View style={styles.container}>
       {showBack ? (
-        <TouchableOpacity
-          style={styles.iconBtn}
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace("/");
-            }
-          }}
-        >
-          <Text style={styles.icon}>‹</Text>
-        </TouchableOpacity>
+        <GlassPanel style={styles.iconBtn}>
+          <Ionicons
+            name="chevron-back"
+            size={18}
+            color={glass.active}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/");
+              }
+            }}
+            suppressHighlighting
+          />
+        </GlassPanel>
       ) : null}
 
-      {logo ? <Image source={require("../../assets/pelusito.png")} style={styles.logo} /> : null}
+      {logo ? (
+        <Image
+          source={require("../../assets/pelusito.png")}
+          style={[styles.logo, { borderColor: colors.primary, borderRadius: radius.md }]}
+        />
+      ) : null}
 
-      {title ? <Text style={styles.title} numberOfLines={1}>{title}</Text> : null}
+      {title ? <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{title}</Text> : null}
 
       <View style={styles.spacer} />
 
       {rightElement}
 
       {showFavorites ? (
-        <TouchableOpacity style={styles.iconBtn} onPress={() => router.push("/favorites")}>
-          <Text style={styles.icon}>♥</Text>
-        </TouchableOpacity>
+        <GlassPanel style={styles.iconBtn}>
+          <Ionicons
+            name="heart"
+            size={18}
+            color={glass.active}
+            onPress={() => router.push("/favorites")}
+            suppressHighlighting
+          />
+        </GlassPanel>
       ) : null}
     </View>
   );
@@ -57,22 +70,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-    backgroundColor: colors.background,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "transparent",
   },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 36,
+    height: 36,
+    borderRadius: 999,
   },
-  icon: { color: colors.cream, fontSize: 22, fontWeight: "700", marginTop: -2 },
-  logo: { width: 40, height: 40, borderRadius: radius.md, borderWidth: 2, borderColor: colors.primary },
-  title: { color: colors.text, fontSize: 17, fontWeight: "700", flexShrink: 1 },
+  logo: { width: 36, height: 36, borderWidth: 1.5 },
+  title: { fontSize: 17, fontWeight: "700", flexShrink: 1 },
   spacer: { flex: 1 },
 });

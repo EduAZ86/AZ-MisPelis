@@ -8,12 +8,13 @@ import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
 import { NavHeader } from "@core/components/NavHeader";
-import { theme } from "@core/theme";
+import { useTheme } from "@core/providers/ThemeProvider";
+import type { ThemeTokens } from "@core/theme";
 import type { StreamSource } from "@core/types";
 
-const { colors, radius } = theme;
-
 export default function MovieScreen() {
+  const { colors, radius } = useTheme();
+  const styles = React.useMemo(() => createMovieStyles(colors, radius), [colors, radius]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const movieId = Number(id);
   const { toggle, isFavorite } = useFavorites();
@@ -210,7 +211,8 @@ export default function MovieScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createMovieStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["radius"]) {
+  return StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
@@ -273,3 +275,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
 });
+}

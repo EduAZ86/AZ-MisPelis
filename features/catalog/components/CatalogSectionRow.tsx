@@ -11,7 +11,7 @@ interface CatalogSectionRowProps {
 }
 
 function SectionRowMovies({ section, title, onPressItem }: CatalogSectionRowProps) {
-  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGetMovieSection(section);
 
   const items = data?.pages.flat() ?? [];
@@ -28,7 +28,7 @@ function SectionRowMovies({ section, title, onPressItem }: CatalogSectionRowProp
 }
 
 function SectionRowSeries({ section, title, onPressItem }: CatalogSectionRowProps) {
-  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGetSeriesSection(section);
 
   const items = data?.pages.flat() ?? [];

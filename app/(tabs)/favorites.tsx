@@ -1,20 +1,20 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useFavorites, type FavoriteItem, useContinueWatching, type ContinueWatchingItem } from "@features/favorites";
 import { NavHeader } from "@core/components/NavHeader";
-import { theme } from "@core/theme";
-
-const { colors, radius } = theme;
+import { TabScreen, useTabScrollInsets } from "@core/components/TabScreen";
+import { useTheme } from "@core/providers/ThemeProvider";
 
 type LibraryItem = FavoriteItem | ContinueWatchingItem;
 
 export default function FavoritesScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { favorites, toggle } = useFavorites();
   const { items: continueWatching, remove: removeContinue } = useContinueWatching();
   const [activeTab, setActiveTab] = useState<"favs" | "continue">("favs");
+  const scrollInsets = useTabScrollInsets(56);
 
   const data = activeTab === "favs" ? favorites : continueWatching;
 
@@ -26,27 +26,27 @@ export default function FavoritesScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.surface }]}
         onPress={() => router.push(`/${item.type === "tv" ? "series" : item.type}/${item.id}${season ? `?season=${season}&episode=${episode}` : ""}`)}
       >
         {item.poster ? (
           <Image source={{ uri: item.poster }} style={styles.poster} />
         ) : (
-          <View style={[styles.poster, styles.placeholder]} />
+          <View style={[styles.poster, { backgroundColor: colors.surfaceAlt }]} />
         )}
-        <View style={styles.overlay}>
-          <Text style={styles.title}>{item.title}</Text>
+        <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+          <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
           {isTV && season && episode && (
-            <Text style={styles.episode}>T{season} E{episode}</Text>
+            <Text style={[styles.episode, { color: colors.gold }]}>T{season} E{episode}</Text>
           )}
           {isTV && "progress" in item && (
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { flex: progress }]} />
+            <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+              <View style={[styles.progressFill, { flex: progress, backgroundColor: colors.primary }]} />
             </View>
           )}
         </View>
         <TouchableOpacity
-          style={styles.removeBtn}
+          style={[styles.removeBtn, { backgroundColor: colors.primaryDark }]}
           onPress={(e) => {
             e.stopPropagation();
             if (activeTab === "favs") toggle(item);
@@ -60,21 +60,22 @@ export default function FavoritesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <NavHeader showBack title="Mi biblioteca" />
-      <View style={styles.header}>
+    <TabScreen
+      floatingHeader={<NavHeader title="Mi biblioteca" />}
+    >
+      <View style={[styles.header, { paddingTop: scrollInsets.paddingTop }]}>
         <View style={styles.tabs}>
           <TouchableOpacity style={[styles.tab, activeTab === "favs" && styles.tabActive]} onPress={() => setActiveTab("favs")}>
-            <Text style={[styles.tabText, activeTab === "favs" && styles.tabTextActive]}>Favoritos ({favorites.length})</Text>
+            <Text style={[styles.tabText, { color: colors.textMuted }, activeTab === "favs" && styles.tabTextActive, { color: colors.text }]}>Favoritos ({favorites.length})</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.tab, activeTab === "continue" && styles.tabActive]} onPress={() => setActiveTab("continue")}>
-            <Text style={[styles.tabText, activeTab === "continue" && styles.tabTextActive]}>Continuar viendo ({continueWatching.length})</Text>
+            <Text style={[styles.tabText, { color: colors.textMuted }, activeTab === "continue" && styles.tabTextActive, { color: colors.text }]}>Continuar viendo ({continueWatching.length})</Text>
           </TouchableOpacity>
         </View>
       </View>
       {data.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
             {activeTab === "favs" ? "No tienes favoritos aún" : "No hay contenido en progreso"}
           </Text>
         </View>
@@ -83,36 +84,34 @@ export default function FavoritesScreen() {
           data={data}
           keyExtractor={(item) => `${item.type}-${item.id}-${("season" in item ? item.season : "") ?? ""}-${("episode" in item ? item.episode : "") ?? ""}`}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: scrollInsets.paddingBottom }]}
           horizontal={false}
           numColumns={3}
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </TabScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
   header: { padding: 16 },
-  headerTitle: { color: colors.cream, fontSize: 28, fontWeight: "800", marginBottom: 12 },
+  headerTitle: { fontSize: 28, fontWeight: "800", marginBottom: 12 },
   tabs: { flexDirection: "row", gap: 8 },
-  tab: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.surface, borderRadius: radius.pill },
-  tabActive: { backgroundColor: colors.primary },
-  tabText: { color: colors.textMuted, fontSize: 13, fontWeight: "500" },
-  tabTextActive: { color: colors.text, fontWeight: "700" },
+  tab: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 999, borderWidth: 1, borderColor: "rgba(255,255,255,0.16)" },
+  tabActive: { backgroundColor: "rgba(255,255,255,0.25)", borderColor: "rgba(255,255,255,0.45)" },
+  tabText: { fontSize: 13, fontWeight: "500" },
+  tabTextActive: { fontWeight: "700" },
   listContent: { paddingHorizontal: 4, paddingBottom: 24 },
-  card: { width: "30%", marginRight: "3%", marginBottom: 16, borderRadius: 8, overflow: "hidden", backgroundColor: colors.surface, position: "relative", borderWidth: 1, borderColor: colors.border },
+  card: { width: "30%", marginRight: "3%", marginBottom: 16, borderRadius: 12, overflow: "hidden", position: "relative" },
   poster: { width: "100%", height: 160 },
-  placeholder: { backgroundColor: colors.surfaceAlt },
-  overlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 8, backgroundColor: colors.overlay },
-  title: { color: colors.text, fontSize: 11, fontWeight: "600", marginBottom: 2 },
-  episode: { color: colors.gold, fontSize: 10 },
-  progressBar: { height: 3, backgroundColor: colors.border, borderRadius: 1.5, marginTop: 4, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: colors.primary },
-  removeBtn: { position: "absolute", top: 4, right: 4, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primaryDark, alignItems: "center", justifyContent: "center" },
+  overlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 8 },
+  title: { fontSize: 11, fontWeight: "600", marginBottom: 2 },
+  episode: { fontSize: 10 },
+  progressBar: { height: 3, borderRadius: 1.5, marginTop: 4, overflow: "hidden" },
+  progressFill: { height: "100%" },
+  removeBtn: { position: "absolute", top: 4, right: 4, width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   removeBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
   empty: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
-  emptyText: { color: colors.textFaint, fontSize: 16, textAlign: "center" },
+  emptyText: { fontSize: 16, textAlign: "center" },
 });
