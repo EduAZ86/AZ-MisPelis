@@ -1,0 +1,17 @@
+appId: com.mispelis.app
+name: "04 - Detalle de serie con temporadas (TMDB 1396 = Breaking Bad)"
+---
+- launchApp:
+    clearState: true
+- openLink: "mispelis:///tv/1396"
+- runFlow:
+    when:
+      visible: 'Abrir en "misPelis"'
+    commands:
+      - tapOn: "Abrir"
+- extendedWaitUntil:
+    visible: "Temporadas"
+    timeout: 20000
+# cambiar de temporada debe resetear el episodio seleccionado
+- tapOn: "Temporada 2"
+- assertVisible: "Episodios - Temporada 2"

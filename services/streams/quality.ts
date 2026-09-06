@@ -1,0 +1,1 @@
+export { qualityFromUrl, detectQuality } from "@services/mirrors/decoders/quality";

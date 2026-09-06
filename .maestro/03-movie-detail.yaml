@@ -1,0 +1,25 @@
+appId: com.mispelis.app
+name: "03 - Detalle de película (deep link TMDB 354912 = Coco)"
+---
+- launchApp:
+    clearState: true
+- openLink: "mispelis:///movie/354912"
+- runFlow:
+    when:
+      visible: 'Abrir en "misPelis"'
+    commands:
+      - tapOn: "Abrir"
+- extendedWaitUntil:
+    visible: "Sinopsis"
+    timeout: 20000
+# el botón dice "Cargar fuentes" antes de resolver y "Reproducir" después
+- runFlow:
+    when:
+      visible: "Cargar fuentes"
+    commands:
+      - assertVisible: "Cargar fuentes"
+- runFlow:
+    when:
+      visible: "Reproducir"
+    commands:
+      - assertVisible: "Reproducir"

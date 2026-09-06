@@ -1,0 +1,11 @@
+appId: com.mispelis.app
+name: "01 - Home: carga de catálogo TMDB"
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+# La home hace fetch a TMDB; Maestro reintenta automáticamente hasta 10s
+- assertVisible: "misPelis"
+- extendedWaitUntil:
+    visible: "Tendencias esta semana"
+    timeout: 20000

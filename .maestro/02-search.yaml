@@ -1,0 +1,15 @@
+appId: com.mispelis.app
+name: "02 - Búsqueda: query con resultados"
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "Buscar películas y series..."
+    index: 0
+- inputText: "Coco"
+# El primer resultado debe ser la película Coco (TMDB search/multi)
+- extendedWaitUntil:
+    visible: "Película"
+    timeout: 15000
+# buscar vacío: limpiar el input no debe mostrar resultados erróneos
+- back

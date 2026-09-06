@@ -1,0 +1,23 @@
+appId: com.mispelis.app
+name: "05 - Favoritos: toggle y persistencia en biblioteca"
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- openLink: "mispelis:///movie/354912"
+- runFlow:
+    when:
+      visible: 'Abrir en "misPelis"'
+    commands:
+      - tapOn: "Abrir"
+- extendedWaitUntil:
+    visible: "☆ Favoritos"
+    timeout: 20000
+- tapOn: "☆ Favoritos"
+- assertVisible: "★ Favorito"
+- openLink: "mispelis:///favorites"
+- extendedWaitUntil:
+    visible: "Mi biblioteca"
+    timeout: 10000
+- assertVisible: "Favoritos (1)"
+- assertVisible: "Coco"

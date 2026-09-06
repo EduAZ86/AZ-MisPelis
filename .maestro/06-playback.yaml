@@ -1,0 +1,19 @@
+appId: com.mispelis.app
+name: "06 - Playback real: resolución de fuentes y reproductor"
+---
+- launchApp:
+    clearState: true
+- openLink: "mispelis:///movie/354912"
+- runFlow:
+    when:
+      visible: 'Abrir en "misPelis"'
+    commands:
+      - tapOn: "Abrir"
+- extendedWaitUntil:
+    visible: "Cargar fuentes"
+    timeout: 20000
+- tapOn: "Cargar fuentes"
+# resolveStreams consulta HackStore + SeriesMetro + mirrors en vivo
+- extendedWaitUntil:
+    visible: "Reproductor"
+    timeout: 45000
