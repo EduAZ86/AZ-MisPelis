@@ -1,15 +1,18 @@
 import React, { useState, useCallback } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView, useWindowDimensions } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { MediaGrid, FilterModal, sortLabelFor, useCatalogFilters, useDiscoverMovies, useGetMovieGenres } from "@features/catalog";
 import { NavHeader } from "@core/components/NavHeader";
 import { TabScreen } from "@core/components/TabScreen";
 import { useTheme } from "@core/providers/ThemeProvider";
+import { setNavFilterChips } from "@core/navFilterStore";
 import type { TmdbMedia } from "@core/types";
 
 export default function PeliculasScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const params = useLocalSearchParams<{ genre?: string }>();
   const { filters, applyFilters, setGenre } = useCatalogFilters();
   const [filterOpen, setFilterOpen] = useState(false);
@@ -25,6 +28,18 @@ export default function PeliculasScreen() {
 
   const items = data?.pages.flat() ?? [];
 
+  React.useEffect(() => {
+    setNavFilterChips({
+      sortLabel: `⇅ ${sortLabelFor(filters.sortBy)}`,
+      genreLabel: filters.genre ? (genres?.find((g) => g.id === filters.genre)?.name ?? "Género") : null,
+      yearLabel: filters.year,
+      onOpen: () => setFilterOpen(true),
+      onClearGenre: () => applyFilters({ ...filters, genre: null }),
+      onClearYear: () => applyFilters({ ...filters, year: null }),
+    });
+    return () => setNavFilterChips(null);
+  }, [filters, genres, applyFilters]);
+
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -33,33 +48,37 @@ export default function PeliculasScreen() {
     router.push(`/movie/${item.id}`);
   };
 
+  const filterBar = (
+    <View style={[styles.filterBar, !isTablet && { paddingTop: 0, paddingHorizontal: 8 }]}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
+        <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => setFilterOpen(true)}>
+          <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>⇅ {sortLabelFor(filters.sortBy)}</Text>
+        </TouchableOpacity>
+        {filters.genre ? (
+          <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => applyFilters({ ...filters, genre: null })}>
+            <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>
+              {genres?.find((g) => g.id === filters.genre)?.name ?? "Género"} ✕
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {filters.year ? (
+          <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => applyFilters({ ...filters, year: null })}>
+            <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>{filters.year} ✕</Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity style={styles.chip} onPress={() => setFilterOpen(true)}>
+          <Text style={[styles.chipText, { color: colors.textMuted }]}>Filtrar…</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+
   return (
     <TabScreen
       floatingHeader={
         <View>
           <NavHeader title="Películas" />
-          <View style={styles.filterBar}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
-              <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => setFilterOpen(true)}>
-                <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>⇅ {sortLabelFor(filters.sortBy)}</Text>
-              </TouchableOpacity>
-              {filters.genre ? (
-                <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => applyFilters({ ...filters, genre: null })}>
-                  <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>
-                    {genres?.find((g) => g.id === filters.genre)?.name ?? "Género"} ✕
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-              {filters.year ? (
-                <TouchableOpacity style={[styles.chip, styles.chipActive]} onPress={() => applyFilters({ ...filters, year: null })}>
-                  <Text style={[styles.chipText, { color: colors.textMuted }, styles.chipTextActive, { color: colors.text }]}>{filters.year} ✕</Text>
-                </TouchableOpacity>
-              ) : null}
-              <TouchableOpacity style={styles.chip} onPress={() => setFilterOpen(true)}>
-                <Text style={[styles.chipText, { color: colors.textMuted }]}>Filtrar…</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+          {!isTablet && filterBar}
         </View>
       }
     >

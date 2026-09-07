@@ -1,20 +1,26 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, useWindowDimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { getImageUrl } from "@services/tmdb";
 import { useGetDetail, useGetServers, useServerSelection } from "@features/catalog";
 import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
 import { NavHeader } from "@core/components/NavHeader";
+import { GlassPanel } from "@core/components/Glass";
 import { useTheme } from "@core/providers/ThemeProvider";
 import type { ThemeTokens } from "@core/theme";
 import type { StreamSource } from "@core/types";
 
 export default function MovieScreen() {
-  const { colors, radius } = useTheme();
+  const { colors, radius, glass } = useTheme();
   const styles = React.useMemo(() => createMovieStyles(colors, radius), [colors, radius]);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { id } = useLocalSearchParams<{ id: string }>();
   const movieId = Number(id);
   const { toggle, isFavorite } = useFavorites();
@@ -34,7 +40,6 @@ export default function MovieScreen() {
     filteredSources,
     languages,
     servers: serverList,
-    selectedSource,
     selectedKey,
     languageFilter,
     serverFilter,
@@ -44,7 +49,7 @@ export default function MovieScreen() {
     setSources,
   } = useServerSelection(servers ?? []);
 
-  const { resolveSource, isResolving, error: resolveError } = useMediaSourceResolver({
+  const { resolveSource, error: resolveError } = useMediaSourceResolver({
     input: { type: "movie", id: movieId },
   });
 
@@ -59,23 +64,23 @@ export default function MovieScreen() {
     loadServers();
   };
 
-  const handlePlay = async () => {
-    if (!selectedSource) return;
-    const resolved = await resolveSource(selectedSource);
+  const handleSelectSource = async (source: StreamSource) => {
+    selectSource(source);
+    const resolved = await resolveSource(source);
     if (resolved) {
       setPlaySource(resolved);
     }
   };
 
   if (isLoading) {
-    return <View style={styles.centered}><ActivityIndicator size="large" color="#fff" /></View>;
+    return <View style={styles.centered}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   if (isError || !detail) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>Error al cargar la película</Text>
-        <Text style={styles.retry} onPress={() => setShowSources(showSources)}>Reintentar</Text>
+        <Text style={[styles.error, { color: colors.danger }]}>Error al cargar la película</Text>
+        <Text style={[styles.retry, { color: colors.primary }]} onPress={() => loadServers()}>Reintentar</Text>
       </View>
     );
   }
@@ -89,10 +94,22 @@ export default function MovieScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <NavHeader showBack showFavorites />
+
+      {isTablet && (
+        <TouchableOpacity
+          style={[styles.tabletBack, { top: insets.top + 8, left: 16 }]}
+          onPress={() => router.back()}
+        >
+          <GlassPanel style={styles.tabletBackBtn}>
+            <Ionicons name="chevron-back" size={20} color={glass.active} suppressHighlighting />
+          </GlassPanel>
+        </TouchableOpacity>
+      )}
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.backdropContainer}>
           {backdrop && <Image source={{ uri: backdrop }} style={styles.backdrop} />}
-          <View style={styles.gradient} />
+          <View style={styles.backdropGradient} />
           <View style={styles.headerContent}>
             {poster && <Image source={{ uri: poster }} style={styles.poster} />}
             <View style={styles.titleContainer}>
@@ -117,46 +134,48 @@ export default function MovieScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sinopsis</Text>
-          <Text style={styles.overview}>{detail.overview || "Sin sinopsis disponible"}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.cream }]}>Sinopsis</Text>
+          <Text style={[styles.overview, { color: colors.textMuted }]}>{detail.overview || "Sin sinopsis disponible"}</Text>
         </View>
 
         {showSources && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Fuentes disponibles</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Fuentes disponibles</Text>
             {serversLoading ? (
-              <ActivityIndicator size="large" color="#4CAF50" style={styles.centered} />
+              <ActivityIndicator size="large" color={colors.primary} style={styles.centered} />
             ) : serversError ? (
-              <Text style={styles.error}>Error al cargar fuentes</Text>
+              <Text style={[styles.error, { color: colors.danger }]}>Error al cargar fuentes</Text>
             ) : (
               <>
                 <View style={styles.filterRow}>
-                  <Text style={styles.filterLabel}>Idioma:</Text>
+                  <Text style={[styles.filterLabel, { color: colors.textMuted }]}>Idioma:</Text>
                   {languages.map((lang: string) => (
                     <TouchableOpacity
                       key={lang}
                       style={[
                         styles.filterChip,
-                        languageFilter === lang && styles.filterChipActive,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        languageFilter === lang && { backgroundColor: colors.primary, borderColor: colors.primary },
                       ]}
                       onPress={() => setLanguageFilter(languageFilter === lang ? null : lang)}
                     >
-                      <Text style={styles.filterChipText}>{lang}</Text>
+                      <Text style={[styles.filterChipText, { color: colors.text }]}>{lang}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
                 <View style={styles.filterRow}>
-                  <Text style={styles.filterLabel}>Servidor:</Text>
+                  <Text style={[styles.filterLabel, { color: colors.textMuted }]}>Servidor:</Text>
                   {serverList.map((s: string) => (
                     <TouchableOpacity
                       key={s}
                       style={[
                         styles.filterChip,
-                        serverFilter === s && styles.filterChipActive,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        serverFilter === s && { backgroundColor: colors.primary, borderColor: colors.primary },
                       ]}
                       onPress={() => setServerFilter(serverFilter === s ? null : s)}
                     >
-                      <Text style={styles.filterChipText}>{s}</Text>
+                      <Text style={[styles.filterChipText, { color: colors.text }]}>{s}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -165,31 +184,21 @@ export default function MovieScreen() {
                     key={source.key}
                     style={[
                       styles.sourceItem,
-                      selectedKey === source.key && styles.sourceItemSelected,
+                      { backgroundColor: colors.surface, borderColor: colors.border },
+                      selectedKey === source.key && { borderColor: colors.primary, backgroundColor: colors.primarySoft },
                     ]}
-                    onPress={() => selectSource(source)}
+                    onPress={() => handleSelectSource(source)}
                   >
                     <View style={styles.sourceInfo}>
-                      <Text style={styles.sourceLanguage}>{source.language}</Text>
-                      <Text style={styles.sourceServer}>{source.mirror}</Text>
-                      <Text style={styles.sourceQuality}>{source.quality}</Text>
+                      <Text style={[styles.sourceLanguage, { color: colors.primary }]}>{source.language}</Text>
+                      <Text style={[styles.sourceServer, { color: colors.creamMuted }]}>{source.mirror}</Text>
+                      <Text style={[styles.sourceQuality, { color: colors.textMuted }]}>{source.quality}</Text>
                     </View>
                     {selectedKey === source.key && (
-                      <View style={styles.sourceSelectedIndicator} />
+                      <View style={[styles.sourceSelectedIndicator, { backgroundColor: colors.primary }]} />
                     )}
                   </TouchableOpacity>
                 ))}
-                {selectedSource && (
-                  <TouchableOpacity
-                    style={[styles.btn, styles.btnPrimary, styles.playBtn]}
-                    onPress={handlePlay}
-                    disabled={isResolving}
-                  >
-                    <Text style={styles.btnText}>
-                      {isResolving ? "Resolviendo..." : "Reproducir"}
-                    </Text>
-                  </TouchableOpacity>
-                )}
               </>
             )}
           </View>
@@ -197,11 +206,11 @@ export default function MovieScreen() {
 
         {playSource && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reproductor</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Reproductor</Text>
             <VideoPlayerView
               currentSource={playSource}
               sources={sources}
-              onSelectSource={selectSource}
+              onSelectSource={handleSelectSource}
               playbackError={resolveError}
             />
           </View>
@@ -216,15 +225,18 @@ function createMovieStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["r
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
-  backdropContainer: { position: "relative", height: 300 },
-  backdrop: { ...StyleSheet.absoluteFill },
-  gradient: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "transparent",
+  backdropContainer: { position: "relative", minHeight: 360 },
+  backdrop: { width: "100%", height: 360, resizeMode: "cover" },
+  backdropGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 200,
   },
-  headerContent: { flex: 1, flexDirection: "row", padding: 16, alignItems: "flex-end", gap: 16 },
+  headerContent: { flexDirection: "row", padding: 16, gap: 16 },
   poster: { width: 120, height: 180, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },
-  titleContainer: { flex: 1, justifyContent: "flex-end", paddingBottom: 8 },
+  titleContainer: { flex: 1, justifyContent: "center", paddingBottom: 8 },
   title: { color: colors.text, fontSize: 22, fontWeight: "800" },
   year: { color: colors.creamMuted, fontSize: 14, marginTop: 2 },
   genres: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
@@ -236,43 +248,45 @@ function createMovieStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["r
   btnText: { color: colors.text, fontWeight: "600", fontSize: 14 },
   playBtn: { marginTop: 12, width: "100%" },
   section: { paddingHorizontal: 16, marginTop: 16 },
-  sectionTitle: { color: colors.cream, fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  overview: { color: colors.textMuted, fontSize: 14, lineHeight: 22 },
-  error: { color: colors.danger, marginTop: 8, textAlign: "center" },
-  retry: { color: "#4CAF50", marginTop: 8, textDecorationLine: "underline" },
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  overview: { fontSize: 14, lineHeight: 22 },
+  error: { marginTop: 8, textAlign: "center" },
+  retry: { marginTop: 8, textDecorationLine: "underline" },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  filterLabel: { color: "#aaa", marginRight: 8, alignSelf: "center" },
+  filterLabel: { marginRight: 8, alignSelf: "center" },
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
   },
-  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  filterChipText: { color: "#fff", fontSize: 12, fontWeight: "500" },
+  filterChipText: { fontSize: 12, fontWeight: "500" },
   sourceItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 12,
-    backgroundColor: colors.surface,
     borderRadius: radius.md,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: colors.border,
   },
-  sourceItemSelected: { borderColor: colors.primary, backgroundColor: "#1a3a1a" },
   sourceInfo: { flexDirection: "row", gap: 12, flex: 1 },
-  sourceLanguage: { color: colors.primary, fontWeight: "600", fontSize: 13 },
-  sourceServer: { color: colors.creamMuted, fontSize: 13 },
-  sourceQuality: { color: colors.textMuted, fontSize: 12 },
+  sourceLanguage: { fontWeight: "600", fontSize: 13 },
+  sourceServer: { fontSize: 13 },
+  sourceQuality: { fontSize: 12 },
   sourceSelectedIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.primary,
+  },
+  tabletBack: {
+    position: "absolute",
+    zIndex: 10,
+  },
+  tabletBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
 });
 }

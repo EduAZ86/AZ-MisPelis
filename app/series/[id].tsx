@@ -1,20 +1,26 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { getImageUrl } from "@services/tmdb";
 import { useGetDetail, useGetServers, useGetSeason, useServerSelection } from "@features/catalog";
 import { VideoPlayerView, useMediaSourceResolver } from "@features/player";
 import { useFavorites } from "@features/favorites";
 import { useApiErrors } from "@core/hooks/useApiErrors";
 import { NavHeader } from "@core/components/NavHeader";
+import { GlassPanel } from "@core/components/Glass";
 import { useTheme } from "@core/providers/ThemeProvider";
 import type { ThemeTokens } from "@core/theme";
 import type { StreamSource, TmdbEpisode } from "@core/types";
 
 export default function TVScreen() {
-  const { colors, radius } = useTheme();
+  const { colors, radius, glass } = useTheme();
   const styles = React.useMemo(() => createSeriesStyles(colors, radius), [colors, radius]);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { id } = useLocalSearchParams<{ id: string }>();
   const tvId = Number(id);
   const { toggle, isFavorite } = useFavorites();
@@ -41,7 +47,6 @@ export default function TVScreen() {
     filteredSources,
     languages,
     servers: serverList,
-    selectedSource,
     selectedKey,
     languageFilter,
     serverFilter,
@@ -51,7 +56,7 @@ export default function TVScreen() {
     setSources,
   } = useServerSelection(servers ?? []);
 
-  const { resolveSource, isResolving, error: resolveError } = useMediaSourceResolver({
+  const { resolveSource, error: resolveError } = useMediaSourceResolver({
     input: { type: "tv", id: tvId, season: selectedSeason, episode: selectedEpisode },
   });
 
@@ -75,9 +80,9 @@ export default function TVScreen() {
     loadServers();
   };
 
-  const handlePlay = async () => {
-    if (!selectedSource) return;
-    const resolved = await resolveSource(selectedSource);
+  const handleSelectSource = async (source: StreamSource) => {
+    selectSource(source);
+    const resolved = await resolveSource(source);
     if (resolved) {
       setPlaySource(resolved);
     }
@@ -92,7 +97,7 @@ export default function TVScreen() {
   }
 
   if (isError || !detail) {
-    return <View style={styles.centered}><Text style={styles.error}>Error al cargar la serie</Text></View>;
+    return <View style={styles.centered}><Text style={[styles.error, { color: colors.danger }]}>Error al cargar la serie</Text></View>;
   }
 
   const title = detail.name;
@@ -110,10 +115,22 @@ export default function TVScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <NavHeader showBack showFavorites />
+
+      {isTablet && (
+        <TouchableOpacity
+          style={[styles.tabletBack, { top: insets.top + 8, left: 16 }]}
+          onPress={() => router.back()}
+        >
+          <GlassPanel style={styles.tabletBackBtn}>
+            <Ionicons name="chevron-back" size={20} color={glass.active} suppressHighlighting />
+          </GlassPanel>
+        </TouchableOpacity>
+      )}
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.backdropContainer}>
           {backdrop && <Image source={{ uri: backdrop }} style={styles.backdrop} />}
-          <View style={styles.gradient} />
+          <View style={styles.backdropGradient} />
           <View style={styles.headerContent}>
             {poster && <Image source={{ uri: poster }} style={styles.poster} />}
             <View style={styles.titleContainer}>
@@ -131,13 +148,13 @@ export default function TVScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sinopsis</Text>
-          <Text style={styles.overview}>{detail.overview || "Sin sinopsis disponible"}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.cream }]}>Sinopsis</Text>
+          <Text style={[styles.overview, { color: colors.textMuted }]}>{detail.overview || "Sin sinopsis disponible"}</Text>
         </View>
 
         {seasons.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Temporadas</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Temporadas</Text>
             <FlatList
               data={seasons}
               keyExtractor={(s: { season_number: number }) => String(s.season_number)}
@@ -145,11 +162,12 @@ export default function TVScreen() {
                 <TouchableOpacity
                   style={[
                     styles.seasonBtn,
-                    selectedSeason === item.season_number && styles.seasonBtnActive,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    selectedSeason === item.season_number && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                   onPress={() => handleSeasonPress(item.season_number)}
                 >
-                  <Text style={[styles.seasonBtnText, selectedSeason === item.season_number && styles.seasonBtnTextActive]}>
+                  <Text style={[styles.seasonBtnText, { color: colors.text }, selectedSeason === item.season_number && { fontWeight: "700" }]}>
                     Temporada {item.season_number}
                   </Text>
                 </TouchableOpacity>
@@ -163,7 +181,7 @@ export default function TVScreen() {
 
         {(currentSeasonData || episodesLoading) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Episodios - Temporada {selectedSeason}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Episodios - Temporada {selectedSeason}</Text>
             {episodesLoading ? (
               <ActivityIndicator size="small" color={colors.primary} style={styles.episodesLoader} />
             ) : episodes && episodes.length > 0 ? (
@@ -184,14 +202,15 @@ export default function TVScreen() {
                     key={ep}
                     style={[
                       styles.episodeBtn,
-                      selectedEpisode === ep && styles.episodeBtnActive,
+                      { backgroundColor: colors.surface, borderColor: colors.border },
+                      selectedEpisode === ep && { backgroundColor: colors.primary, borderColor: colors.primary },
                     ]}
                     onPress={() => handleEpisodePress(ep)}
                   >
-                    <View style={[styles.episodePlaceholder]}>
-                      <Text style={styles.episodePlaceholderNumber}>{ep}</Text>
+                    <View style={[styles.episodePlaceholder, { backgroundColor: colors.surfaceAlt }]}>
+                      <Text style={[styles.episodePlaceholderNumber, { color: colors.textFaint }]}>{ep}</Text>
                     </View>
-                    <Text style={styles.episodeName} numberOfLines={1}>Episodio {ep}</Text>
+                    <Text style={[styles.episodeName, { color: colors.text }]} numberOfLines={1}>Episodio {ep}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -201,40 +220,42 @@ export default function TVScreen() {
 
         {showSources && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Fuentes disponibles</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Fuentes disponibles</Text>
             {serversLoading ? (
               <ActivityIndicator size="large" color={colors.primary} style={styles.centered} />
             ) : serversError ? (
-              <Text style={styles.error}>Error al cargar fuentes</Text>
+              <Text style={[styles.error, { color: colors.danger }]}>Error al cargar fuentes</Text>
             ) : (
               <>
                 <View style={styles.filterRow}>
-                  <Text style={styles.filterLabel}>Idioma:</Text>
+                  <Text style={[styles.filterLabel, { color: colors.textMuted }]}>Idioma:</Text>
                   {languages.map((lang: string) => (
                     <TouchableOpacity
                       key={lang}
                       style={[
                         styles.filterChip,
-                        languageFilter === lang && styles.filterChipActive,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        languageFilter === lang && { backgroundColor: colors.primary, borderColor: colors.primary },
                       ]}
                       onPress={() => setLanguageFilter(languageFilter === lang ? null : lang)}
                     >
-                      <Text style={styles.filterChipText}>{lang}</Text>
+                      <Text style={[styles.filterChipText, { color: colors.text }]}>{lang}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
                 <View style={styles.filterRow}>
-                  <Text style={styles.filterLabel}>Servidor:</Text>
+                  <Text style={[styles.filterLabel, { color: colors.textMuted }]}>Servidor:</Text>
                   {serverList.map((s: string) => (
                     <TouchableOpacity
                       key={s}
                       style={[
                         styles.filterChip,
-                        serverFilter === s && styles.filterChipActive,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        serverFilter === s && { backgroundColor: colors.primary, borderColor: colors.primary },
                       ]}
                       onPress={() => setServerFilter(serverFilter === s ? null : s)}
                     >
-                      <Text style={styles.filterChipText}>{s}</Text>
+                      <Text style={[styles.filterChipText, { color: colors.text }]}>{s}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -243,31 +264,21 @@ export default function TVScreen() {
                     key={source.key}
                     style={[
                       styles.sourceItem,
-                      selectedKey === source.key && styles.sourceItemSelected,
+                      { backgroundColor: colors.surface, borderColor: colors.border },
+                      selectedKey === source.key && { borderColor: colors.primary, backgroundColor: colors.primarySoft },
                     ]}
-                    onPress={() => selectSource(source)}
+                    onPress={() => handleSelectSource(source)}
                   >
                     <View style={styles.sourceInfo}>
-                      <Text style={styles.sourceLanguage}>{source.language}</Text>
-                      <Text style={styles.sourceServer}>{source.mirror}</Text>
-                      <Text style={styles.sourceQuality}>{source.quality}</Text>
+                      <Text style={[styles.sourceLanguage, { color: colors.primary }]}>{source.language}</Text>
+                      <Text style={[styles.sourceServer, { color: colors.creamMuted }]}>{source.mirror}</Text>
+                      <Text style={[styles.sourceQuality, { color: colors.textMuted }]}>{source.quality}</Text>
                     </View>
                     {selectedKey === source.key && (
-                      <View style={styles.sourceSelectedIndicator} />
+                      <View style={[styles.sourceSelectedIndicator, { backgroundColor: colors.primary }]} />
                     )}
                   </TouchableOpacity>
                 ))}
-                {selectedSource && (
-                  <TouchableOpacity
-                    style={[styles.btn, styles.btnPrimary, styles.playBtn]}
-                    onPress={handlePlay}
-                    disabled={isResolving}
-                  >
-                    <Text style={styles.btnText}>
-                      {isResolving ? "Resolviendo..." : "Reproducir"}
-                    </Text>
-                  </TouchableOpacity>
-                )}
               </>
             )}
           </View>
@@ -275,11 +286,11 @@ export default function TVScreen() {
 
         {playSource && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reproductor</Text>
+            <Text style={[styles.sectionTitle, { color: colors.cream }]}>Reproductor</Text>
             <VideoPlayerView
               currentSource={playSource}
               sources={sources}
-              onSelectSource={selectSource}
+              onSelectSource={handleSelectSource}
               playbackError={resolveError}
             />
           </View>
@@ -299,27 +310,26 @@ function EpisodeCard({
   onPress: () => void;
 }) {
   const { colors, radius } = useTheme();
-  const styles = React.useMemo(() => createSeriesStyles(colors, radius), [colors, radius]);
   const still = getImageUrl(episode.still_path, "w300");
   return (
     <TouchableOpacity
-      style={[styles.episodeCard, selected && styles.episodeCardSelected]}
+      style={[{ width: "47.5%", borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: "hidden" }, selected && { borderColor: colors.primary, backgroundColor: colors.surfaceAlt }]}
       onPress={onPress}
     >
-      <View style={styles.episodeThumbWrap}>
+      <View style={{ position: "relative" }}>
         {still ? (
-          <Image source={{ uri: still }} style={styles.episodeThumb} />
+          <Image source={{ uri: still }} style={{ width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt }} />
         ) : (
-          <View style={[styles.episodeThumb, styles.episodeThumbEmpty]}>
-            <Text style={styles.episodePlaceholderNumber}>{episode.episode_number}</Text>
+          <View style={{ width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ color: colors.textFaint, fontSize: 22, fontWeight: "800" }}>{episode.episode_number}</Text>
           </View>
         )}
-        <View style={styles.episodeBadge}>
-          <Text style={styles.episodeBadgeText}>{episode.episode_number}</Text>
+        <View style={{ position: "absolute", bottom: 6, left: 6, backgroundColor: colors.overlay, borderRadius: radius.sm, paddingHorizontal: 6, paddingVertical: 2 }}>
+          <Text style={{ color: colors.cream, fontSize: 11, fontWeight: "700" }}>{episode.episode_number}</Text>
         </View>
-        {selected && <View style={styles.episodeSelectedRing} />}
+        {selected && <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderWidth: 3, borderColor: colors.primary, borderRadius: radius.md }} />}
       </View>
-      <Text style={styles.episodeName} numberOfLines={2}>{episode.name || `Episodio ${episode.episode_number}`}</Text>
+      <Text style={{ color: colors.text, fontSize: 12, fontWeight: "500", padding: 8, minHeight: 44 }} numberOfLines={2}>{episode.name || `Episodio ${episode.episode_number}`}</Text>
     </TouchableOpacity>
   );
 }
@@ -329,12 +339,18 @@ function createSeriesStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollContent: { paddingBottom: 24 },
-  backdropContainer: { position: "relative", height: 300 },
-  backdrop: { ...StyleSheet.absoluteFill },
-  gradient: { ...StyleSheet.absoluteFill, backgroundColor: colors.overlay },
-  headerContent: { flex: 1, flexDirection: "row", padding: 16, alignItems: "flex-end", gap: 16 },
+  backdropContainer: { position: "relative", minHeight: 360 },
+  backdrop: { width: "100%", height: 360, resizeMode: "cover" },
+  backdropGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+  },
+  headerContent: { flexDirection: "row", padding: 16, gap: 16 },
   poster: { width: 120, height: 180, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primaryDark },
-  titleContainer: { flex: 1, justifyContent: "flex-end", paddingBottom: 8 },
+  titleContainer: { flex: 1, justifyContent: "center", paddingBottom: 8 },
   title: { color: colors.text, fontSize: 22, fontWeight: "800" },
   year: { color: colors.creamMuted, fontSize: 14, marginTop: 2 },
   genres: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
@@ -345,70 +361,66 @@ function createSeriesStyles(colors: ThemeTokens["colors"], radius: ThemeTokens["
   btnText: { color: colors.text, fontWeight: "600", fontSize: 14 },
   playBtn: { marginTop: 12, width: "100%" },
   section: { paddingHorizontal: 16, marginTop: 16 },
-  sectionTitle: { color: colors.cream, fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  overview: { color: colors.textMuted, fontSize: 14, lineHeight: 22 },
-  error: { color: colors.danger, marginTop: 8, textAlign: "center" },
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  overview: { fontSize: 14, lineHeight: 22 },
+  error: { marginTop: 8, textAlign: "center" },
   seasonListContent: { paddingHorizontal: 16, gap: 8 },
-  seasonBtn: { paddingVertical: 8, paddingHorizontal: 16, backgroundColor: colors.surface, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border },
-  seasonBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  seasonBtnText: { color: colors.text, fontSize: 13, fontWeight: "500" },
-  seasonBtnTextActive: { color: colors.text, fontWeight: "700" },
+  seasonBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.pill, borderWidth: 1 },
+  seasonBtnText: { fontSize: 13, fontWeight: "500" },
   episodesLoader: { marginTop: 16 },
   episodeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 0 },
-  episodeCard: { width: "47.5%", borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
-  episodeCardSelected: { borderColor: colors.primary, backgroundColor: colors.surfaceAlt },
+  episodeCard: { width: "47.5%", borderRadius: radius.md, borderWidth: 1, overflow: "hidden" },
   episodeThumbWrap: { position: "relative" },
-  episodeThumb: { width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt },
-  episodeThumbEmpty: { alignItems: "center", justifyContent: "center" },
-  episodePlaceholderNumber: { color: colors.textFaint, fontSize: 22, fontWeight: "800" },
+  episodeThumb: { width: "100%", aspectRatio: 16 / 9 },
+  episodePlaceholderNumber: { fontSize: 22, fontWeight: "800" },
   episodeBadge: {
     position: "absolute",
     bottom: 6,
     left: 6,
-    backgroundColor: colors.overlay,
     borderRadius: radius.sm,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  episodeBadgeText: { color: colors.cream, fontSize: 11, fontWeight: "700" },
-  episodeSelectedRing: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderWidth: 3, borderColor: colors.primary, borderRadius: radius.md },
-  episodeName: { color: colors.text, fontSize: 12, fontWeight: "500", padding: 8, minHeight: 44 },
-  episodeBtn: { flex: 1, minWidth: 60, paddingVertical: 10, backgroundColor: colors.surface, borderRadius: radius.md, alignItems: "center", borderWidth: 1, borderColor: colors.border },
-  episodeBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  episodePlaceholder: { width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surfaceAlt, alignItems: "center", justifyContent: "center", borderRadius: radius.sm },
+  episodeBadgeText: { fontSize: 11, fontWeight: "700" },
+  episodeSelectedRing: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderWidth: 3, borderRadius: radius.md },
+  episodeName: { fontSize: 12, fontWeight: "500", padding: 8, minHeight: 44 },
+  episodeBtn: { flex: 1, minWidth: 60, paddingVertical: 10, borderRadius: radius.md, alignItems: "center", borderWidth: 1 },
+  episodePlaceholder: { width: "100%", aspectRatio: 16 / 9, borderRadius: radius.sm },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  filterLabel: { color: colors.textMuted, marginRight: 8, alignSelf: "center" },
+  filterLabel: { marginRight: 8, alignSelf: "center" },
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
   },
-  filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  filterChipText: { color: colors.text, fontSize: 12, fontWeight: "500" },
+  filterChipText: { fontSize: 12, fontWeight: "500" },
   sourceItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 12,
-    backgroundColor: colors.surface,
     borderRadius: radius.md,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: colors.border,
   },
-  sourceItemSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   sourceInfo: { flexDirection: "row", gap: 12, flex: 1 },
-  sourceLanguage: { color: colors.primary, fontWeight: "600", fontSize: 13 },
-  sourceServer: { color: colors.creamMuted, fontSize: 13 },
-  sourceQuality: { color: colors.textMuted, fontSize: 12 },
+  sourceLanguage: { fontWeight: "600", fontSize: 13 },
+  sourceServer: { fontSize: 13 },
+  sourceQuality: { fontSize: 12 },
   sourceSelectedIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.primary,
+  },
+  tabletBack: {
+    position: "absolute",
+    zIndex: 10,
+  },
+  tabletBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
 });
 }

@@ -1,20 +1,38 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import Constants from "expo-constants";
 import { NavHeader } from "@core/components/NavHeader";
+import { GlassPanel } from "@core/components/Glass";
 import { useTheme } from "@core/providers/ThemeProvider";
 import { APP_META } from "@core/theme";
 
 export default function SettingsScreen() {
   const { colors, radius, glass, mode, setMode } = useTheme();
   const styles = createStyles(colors, radius, glass);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const version = Constants.expoConfig?.version ?? APP_META.version;
 
   return (
     <SafeAreaView style={styles.container}>
       <NavHeader showBack title="Ajustes" />
+
+      {isTablet && (
+        <TouchableOpacity
+          style={[styles.tabletBack, { top: insets.top + 8, left: 16 }]}
+          onPress={() => router.back()}
+        >
+          <GlassPanel style={styles.tabletBackBtn}>
+            <Ionicons name="chevron-back" size={20} color={glass.active} suppressHighlighting />
+          </GlassPanel>
+        </TouchableOpacity>
+      )}
+
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         <Text style={styles.section}>Apariencia</Text>
         <View style={styles.row}>
@@ -142,6 +160,15 @@ function createStyles(
     divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
     devName: { color: colors.text, fontSize: 17, fontWeight: "800" },
     devRole: { color: colors.textMuted, fontSize: 13, fontWeight: "500" },
+    tabletBack: {
+      position: "absolute",
+      zIndex: 10,
+    },
+    tabletBackBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+    },
   });
 }
 

@@ -57,10 +57,6 @@ function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackErro
   });
 
   useEffect(() => {
-    player.play();
-  }, [player]);
-
-  useEffect(() => {
     return () => {
       ScreenOrientation.unlockAsync().catch(() => {});
     };
@@ -78,7 +74,7 @@ function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackErro
   const isLandscape = windowWidth > windowHeight;
   const videoStyle = isFullscreen || isLandscape
     ? { width: windowWidth, height: windowHeight }
-    : styles.video;
+    : { width: "100%" as const, height: Math.round((windowWidth - 32) * 9 / 16) };
 
   return (
     <View style={[styles.container, (isFullscreen || isLandscape) && styles.overlayContainer]}>
@@ -101,8 +97,7 @@ function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackErro
 export type { VideoPlayer };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+  container: { width: "100%", backgroundColor: "#000" },
   overlayContainer: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, justifyContent: "center", alignItems: "center" },
-  video: { width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000" },
   playbackError: { color: "#f44", padding: 8, textAlign: "center" },
 });

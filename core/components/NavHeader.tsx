@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { GlassPanel } from "@core/components/Glass";
@@ -16,6 +16,12 @@ interface NavHeaderProps {
 export function NavHeader({ title, showBack = false, showFavorites = false, logo = false, rightElement }: NavHeaderProps) {
   const router = useRouter();
   const { colors, glass, radius } = useTheme();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+
+  if (isTablet) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

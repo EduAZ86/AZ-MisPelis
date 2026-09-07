@@ -37,7 +37,7 @@ export async function fetchDiscoverMovies(
     page: String(page),
     sort_by: sortByFor("movie", filters),
     include_adult: "false",
-    "vote_count.gte": filters.sortBy === "vote_average.desc" ? "300" : "50",
+    "vote_count.gte": filters.sortBy === "vote_average.desc" || filters.sortBy.startsWith("meta_score") ? "300" : "50",
   };
   if (filters.genre) params.with_genres = String(filters.genre);
   if (filters.year) params.primary_release_year = String(filters.year);
@@ -54,7 +54,7 @@ export async function fetchDiscoverTV(
     page: String(page),
     sort_by: sortByFor("tv", filters),
     include_adult: "false",
-    "vote_count.gte": filters.sortBy === "vote_average.desc" ? "300" : "50",
+    "vote_count.gte": filters.sortBy === "vote_average.desc" || filters.sortBy.startsWith("meta_score") ? "300" : "50",
   };
   if (filters.genre) params.with_genres = String(filters.genre);
   if (filters.year) params.first_air_date_year = String(filters.year);

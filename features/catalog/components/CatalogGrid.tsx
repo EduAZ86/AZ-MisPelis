@@ -21,6 +21,8 @@ const { colors, radius } = theme;
 const SORT_OPTIONS: { value: CatalogSortBy; label: string; movieOnly?: boolean }[] = [
   { value: "popularity.desc", label: "Populares (vistas)" },
   { value: "vote_average.desc", label: "Mejor puntuación" },
+  { value: "meta_score.desc", label: "Metascore ↑" },
+  { value: "meta_score.asc", label: "Metascore ↓" },
   { value: "vote_count.desc", label: "Más votadas" },
   { value: "release_date.desc", label: "Más recientes", movieOnly: true },
   { value: "revenue.desc", label: "Taquilla", movieOnly: true },
@@ -77,7 +79,12 @@ export function MediaGrid({ data, onPressItem, onEndReached, loading, emptyText,
               <Text style={gridStyles.year}>
                 {(item.release_date ?? item.first_air_date ?? "").slice(0, 4) || "—"}
               </Text>
-              <Text style={gridStyles.rating}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
+              <View style={gridStyles.ratingRow}>
+                <Text style={gridStyles.rating}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
+                {item.meta_score != null ? (
+                  <Text style={gridStyles.metaScore}>MS {item.meta_score}</Text>
+                ) : null}
+              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -214,9 +221,11 @@ const gridStyles = StyleSheet.create({
   placeholder: { backgroundColor: colors.surfaceAlt },
   overlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 6, paddingTop: 14, backgroundColor: "rgba(0,0,0,0.6)" },
   title: { color: colors.text, fontSize: 10, fontWeight: "600" },
-  metaRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  year: { color: colors.creamMuted, fontSize: 9 },
-  rating: { color: colors.gold, fontSize: 9, fontWeight: "600" },
+   metaRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
+   ratingRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+   year: { color: colors.creamMuted, fontSize: 9 },
+   rating: { color: colors.gold, fontSize: 9, fontWeight: "600" },
+   metaScore: { color: colors.creamMuted, fontSize: 8, fontWeight: "500" },
   footer: { padding: 16 },
   empty: { color: colors.textFaint, textAlign: "center", marginTop: 40 },
 });

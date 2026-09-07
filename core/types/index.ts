@@ -39,6 +39,7 @@ export interface TmdbMedia {
   release_date?: string;
   first_air_date?: string;
   vote_average: number;
+  meta_score?: number;
   genre_ids: number[];
   media_type: "movie" | "tv";
 }
@@ -107,6 +108,8 @@ export interface TmdbGenre {
 export type CatalogSortBy =
   | "popularity.desc"
   | "vote_average.desc"
+  | "meta_score.desc"
+  | "meta_score.asc"
   | "release_date.desc"
   | "first_air_date.desc"
   | "revenue.desc"

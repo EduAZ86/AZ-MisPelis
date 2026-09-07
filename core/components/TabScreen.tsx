@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { TABBAR_SPACE_PHONE, TABBAR_SPACE_TABLET } from "@core/components/GlassTabBar";
+import { TABBAR_SPACE_PHONE } from "@core/components/GlassTabBar";
 import { useTheme } from "@core/providers/ThemeProvider";
 
 export function useTabScrollInsets(headerHeight = 56) {
@@ -9,7 +9,7 @@ export function useTabScrollInsets(headerHeight = 56) {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   return {
-    paddingTop: isTablet ? 8 : insets.top + headerHeight,
+    paddingTop: isTablet ? insets.top : insets.top + headerHeight,
     paddingBottom: isTablet ? 24 : TABBAR_SPACE_PHONE + insets.bottom,
   };
 }
@@ -20,26 +20,18 @@ interface TabScreenProps {
 }
 
 export function TabScreen({ children, floatingHeader }: TabScreenProps) {
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
   const { colors } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View
-        style={[
-          styles.content,
-          { paddingTop: isTablet ? insets.top + TABBAR_SPACE_TABLET : 0 },
-        ]}
-      >
+      <View style={styles.content}>
         {children}
       </View>
 
       {floatingHeader ? (
         <View
           pointerEvents="box-none"
-          style={[styles.headerLayer, { paddingTop: insets.top }]}
+          style={styles.headerLayer}
         >
           {floatingHeader}
         </View>

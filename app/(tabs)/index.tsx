@@ -22,65 +22,50 @@ export default function HomeScreen() {
     router.push(`/${routeType}/${item.id}`);
   };
 
-  const maxRowWidth = isTablet ? 720 : undefined;
-  const rowStyle = maxRowWidth ? { width: maxRowWidth, alignSelf: "center" as const } : undefined;
-
   return (
     <TabScreen
       floatingHeader={
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image
-              source={require("../../assets/pelusito.png")}
-              style={[styles.logo, { borderRadius: radius.md, borderColor: colors.primary }]}
-            />
-            <View>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>AZ</Text>
-              <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Mis Pelis</Text>
+        isTablet ? null : (
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Image
+                source={require("../../assets/pelusito.png")}
+                style={[styles.logo, { borderRadius: radius.md, borderColor: colors.primary }]}
+              />
+              <View>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>AZ</Text>
+                <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Mis Pelis</Text>
+              </View>
             </View>
+            <GlassPanel style={styles.headerBtn}>
+              <Ionicons
+                name="settings-outline"
+                size={18}
+                color={glass.active}
+                onPress={() => router.push("/settings")}
+                suppressHighlighting
+              />
+            </GlassPanel>
           </View>
-          <GlassPanel style={styles.headerBtn}>
-            <Ionicons
-              name="settings-outline"
-              size={18}
-              color={glass.active}
-              onPress={() => router.push("/settings")}
-              suppressHighlighting
-            />
-          </GlassPanel>
-        </View>
+        )
       }
     >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={scrollInsets}>
-        <View style={rowStyle}>
-          <HeroCard items={trendingItems} onPressItem={handlePress} />
-        </View>
+        <HeroCard items={trendingItems} onPressItem={handlePress} />
 
-        <View style={rowStyle}>
-          <SectionHeader title="Películas populares" onViewAll={() => router.push("/peliculas")} />
-        </View>
-        <View style={rowStyle}>
-          <CatalogSectionRow section="movie-popular" title="" onPressItem={handlePress} />
-        </View>
+        <SectionHeader title="Películas populares" onViewAll={() => router.push("/peliculas")} />
+        <CatalogSectionRow section="movie-popular" title="" onPressItem={handlePress} />
 
-        <View style={rowStyle}>
-          <SectionHeader title="Series populares" onViewAll={() => router.push("/series")} />
-        </View>
-        <View style={rowStyle}>
-          <CatalogSectionRow section="tv-popular" title="" onPressItem={handlePress} />
-        </View>
+        <SectionHeader title="Series populares" onViewAll={() => router.push("/series")} />
+        <CatalogSectionRow section="tv-popular" title="" onPressItem={handlePress} />
 
-        <View style={[styles.genresBlock, rowStyle]}>
+        <View style={styles.genresBlock}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Géneros</Text>
           <GenreChips />
         </View>
 
-        <View style={rowStyle}>
-          <CatalogSectionRow section="movie-top" title="Películas mejor valoradas" onPressItem={handlePress} />
-        </View>
-        <View style={rowStyle}>
-          <CatalogSectionRow section="tv-top" title="Series mejor valoradas" onPressItem={handlePress} />
-        </View>
+        <CatalogSectionRow section="movie-top" title="Películas mejor valoradas" onPressItem={handlePress} />
+        <CatalogSectionRow section="tv-top" title="Series mejor valoradas" onPressItem={handlePress} />
       </ScrollView>
     </TabScreen>
   );

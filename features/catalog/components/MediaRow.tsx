@@ -30,6 +30,9 @@ export function MediaCard({ item, onPress }: MediaCardProps) {
       </View>
       <View style={styles.rating}>
         <Text style={[styles.ratingText, { color: colors.gold }]}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
+        {item.meta_score != null ? (
+          <Text style={[styles.metaScore, { color: colors.creamMuted }]}>MS {item.meta_score}</Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -115,18 +118,22 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 12, fontWeight: "700", lineHeight: 16 },
   year: { fontSize: 10, marginTop: 2 },
-  rating: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.16)",
-  },
-  ratingText: { fontSize: 11, fontWeight: "700" },
+   rating: {
+     position: "absolute",
+     top: 8,
+     right: 8,
+     backgroundColor: "rgba(0,0,0,0.55)",
+     borderRadius: 999,
+     paddingHorizontal: 7,
+     paddingVertical: 3,
+     borderWidth: 1,
+     borderColor: "rgba(255,255,255,0.16)",
+     flexDirection: "row",
+     alignItems: "center",
+     gap: 4,
+   },
+   ratingText: { fontSize: 11, fontWeight: "700" },
+   metaScore: { fontSize: 9, fontWeight: "500" },
   rowContainer: { marginBottom: 24 },
   headerRow: {
     flexDirection: "row",
