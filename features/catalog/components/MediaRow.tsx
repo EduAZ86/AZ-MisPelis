@@ -3,6 +3,7 @@ import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndi
 import type { TmdbMedia } from "@core/types";
 import { getImageUrl } from "@services/tmdb";
 import { useTheme } from "@core/providers/ThemeProvider";
+import { useMetaScore } from "../hooks/useMetaScore";
 
 interface MediaCardProps {
   item: TmdbMedia;
@@ -16,6 +17,7 @@ export function MediaCard({ item, onPress }: MediaCardProps) {
   const title = item.title ?? item.name ?? "Sin título";
   const year = (item.release_date ?? item.first_air_date ?? "").slice(0, 4);
   const poster = getImageUrl(item.poster_path, "w342");
+  const metaScore = useMetaScore(item);
 
   return (
     <TouchableOpacity onPress={onPress} style={[styles.card, { width: cardWidth, backgroundColor: colors.surface }]}>
@@ -30,8 +32,8 @@ export function MediaCard({ item, onPress }: MediaCardProps) {
       </View>
       <View style={styles.rating}>
         <Text style={[styles.ratingText, { color: colors.gold }]}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
-        {item.meta_score != null ? (
-          <Text style={[styles.metaScore, { color: colors.creamMuted }]}>MS {item.meta_score}</Text>
+        {metaScore != null ? (
+          <Text style={[styles.metaScore, { color: colors.creamMuted }]}>MS {metaScore}</Text>
         ) : null}
       </View>
     </TouchableOpacity>

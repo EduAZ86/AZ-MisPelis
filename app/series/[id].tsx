@@ -139,7 +139,7 @@ export default function TVScreen() {
               {genres && <Text style={styles.genres}>{genres}</Text>}
               <TouchableOpacity
                 style={[styles.btn, isFavorite(tvId, "tv") ? styles.btnActive : styles.btnOutline]}
-                onPress={() => toggle({ id: tvId, type: "tv", title: title ?? "", poster, addedAt: 0 })}
+                onPress={() => toggle({ id: tvId, type: "tv", title: title ?? "", poster, meta_score: detail.meta_score, addedAt: 0 })}
               >
                 <Text style={styles.btnText}>{isFavorite(tvId, "tv") ? "★ Favorito" : "☆ Favoritos"}</Text>
               </TouchableOpacity>

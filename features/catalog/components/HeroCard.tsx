@@ -6,6 +6,7 @@ import type { TmdbMedia } from "@core/types";
 import { getImageUrl } from "@services/tmdb";
 import { useGetMovieGenres, useGetSeriesGenres } from "@features/catalog";
 import { useTheme } from "@core/providers/ThemeProvider";
+import { useMetaScore } from "../hooks/useMetaScore";
 
 interface HeroCardProps {
   items: TmdbMedia[];
@@ -15,7 +16,6 @@ interface HeroCardProps {
 export function HeroCard({ items, onPressItem }: HeroCardProps) {
   const { colors, radius } = useTheme();
   const { width } = useWindowDimensions();
-  const router = useRouter();
   const listRef = useRef<FlatList<TmdbMedia>>(null);
   const [index, setIndex] = useState(0);
 
@@ -44,45 +44,20 @@ export function HeroCard({ items, onPressItem }: HeroCardProps) {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: TmdbMedia }) => {
-      const backdrop = getImageUrl(item.backdrop_path, "original");
-      const title = item.title ?? item.name ?? "Sin título";
-      const year = (item.release_date ?? item.first_air_date ?? "").slice(0, 4);
-      const genres = (item.genre_ids ?? [])
-        .map((id) => genreMap.get(id))
-        .filter(Boolean)
-        .slice(0, 3)
-        .join(" · ");
-
-      return (
-        <TouchableOpacity activeOpacity={0.9} onPress={() => onPressItem(item)} style={[styles.card, { width: width - 32, backgroundColor: colors.surface }]}>
-          {backdrop ? (
-            <Image source={{ uri: backdrop }} style={styles.backdrop} resizeMode="cover" />
-          ) : (
-            <View style={[styles.backdrop, { backgroundColor: colors.surfaceAlt }]} />
-          )}
-          <View style={styles.fade} />
-          <View style={styles.content}>
-            <View style={[styles.badge, { borderRadius: radius.pill }]}>
-              <Text style={[styles.badgeText, { color: colors.gold }]}>Tendencias</Text>
-            </View>
-            <Text style={styles.title} numberOfLines={2}>{title}</Text>
-            <Text style={styles.meta} numberOfLines={1}>
-              {[year, genres].filter(Boolean).join("  ·  ")}
-            </Text>
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={[styles.watchBtn, { borderRadius: radius.pill }]}
-                onPress={() => router.push(`/${item.media_type === "tv" ? "series" : "movie"}/${item.id}`)}
-              >
-                <Ionicons name="play" size={16} color="#111" />
-                <Text style={styles.watchText}>Ver ahora</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      );
-    },
+    ({ item }: { item: TmdbMedia }) => (
+      <HeroCardItem
+        item={item}
+        width={width}
+        genresText={(item.genre_ids ?? [])
+          .map((id) => genreMap.get(id))
+          .filter(Boolean)
+          .slice(0, 3)
+          .join(" · ")}
+        colors={colors}
+        radius={radius}
+        onPress={onPressItem}
+      />
+    ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [width, genreMap.size, colors, radius]
   );
@@ -116,6 +91,57 @@ export function HeroCard({ items, onPressItem }: HeroCardProps) {
   );
 }
 
+interface HeroCardItemProps {
+  item: TmdbMedia;
+  width: number;
+  genresText: string;
+  colors: ReturnType<typeof useTheme>["colors"];
+  radius: ReturnType<typeof useTheme>["radius"];
+  onPress: (item: TmdbMedia) => void;
+}
+
+function HeroCardItem({ item, width, genresText, colors, radius, onPress }: HeroCardItemProps) {
+  const metaScore = useMetaScore(item);
+  const backdrop = getImageUrl(item.backdrop_path, "original");
+  const title = item.title ?? item.name ?? "Sin título";
+  const year = (item.release_date ?? item.first_air_date ?? "").slice(0, 4);
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)} style={[styles.card, { width: width - 32, backgroundColor: colors.surface }]}>
+      {backdrop ? (
+        <Image source={{ uri: backdrop }} style={styles.backdrop} resizeMode="cover" />
+      ) : (
+        <View style={[styles.backdrop, { backgroundColor: colors.surfaceAlt }]} />
+      )}
+      <View style={styles.fade} />
+      {metaScore != null && (
+        <View style={styles.scoreBadge}>
+          <Text style={styles.scoreBadgeText}>MS {metaScore}</Text>
+        </View>
+      )}
+      <View style={styles.content}>
+        <View style={[styles.badge, { borderRadius: radius.pill }]}>
+          <Text style={[styles.badgeText, { color: colors.gold }]}>Tendencias</Text>
+        </View>
+        <Text style={styles.title} numberOfLines={2}>{title}</Text>
+        <Text style={styles.meta} numberOfLines={1}>
+          {[year, genresText].filter(Boolean).join("  ·  ")}
+        </Text>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={[styles.watchBtn, { borderRadius: radius.pill }]}
+            onPress={() => router.push(`/${item.media_type === "tv" ? "series" : "movie"}/${item.id}`)}
+          >
+            <Ionicons name="play" size={16} color="#111" />
+            <Text style={styles.watchText}>Ver ahora</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   wrapper: {},
   listContent: { paddingHorizontal: 16 },
@@ -134,6 +160,18 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.45)",
   },
+  scoreBadge: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.16)",
+  },
+  scoreBadgeText: { color: "#E9B44C", fontSize: 11, fontWeight: "700" },
   content: { position: "absolute", left: 20, right: 20, bottom: 20 },
   badge: {
     alignSelf: "flex-start",

@@ -124,7 +124,7 @@ export default function MovieScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.btn, isFavorite(movieId, "movie") ? styles.btnActive : styles.btnOutline]}
-                  onPress={() => toggle({ id: movieId, type: "movie", title: title ?? "", poster, addedAt: 0 })}
+                  onPress={() => toggle({ id: movieId, type: "movie", title: title ?? "", poster, meta_score: detail.meta_score, addedAt: 0 })}
                 >
                   <Text style={styles.btnText}>{isFavorite(movieId, "movie") ? "★ Favorito" : "☆ Favoritos"}</Text>
                 </TouchableOpacity>

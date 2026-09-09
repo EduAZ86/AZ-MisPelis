@@ -9,6 +9,7 @@ export interface FavoriteItem {
   type: "movie" | "tv";
   title: string;
   poster: string;
+  meta_score?: number;
   addedAt: number;
 }
 

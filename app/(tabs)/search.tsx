@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { View, Text, TextInput, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
-import { useGetSearch } from "@features/catalog";
+import { useGetSearch, useMetaScore } from "@features/catalog";
 import { getImageUrl } from "@services/tmdb";
 import { NavHeader } from "@core/components/NavHeader";
 import { TabScreen, useTabScrollInsets } from "@core/components/TabScreen";
@@ -28,29 +28,9 @@ export default function SearchScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const renderItem = ({ item }: { item: TmdbMedia }) => {
-    const poster = getImageUrl(item.poster_path, "w200");
-    return (
-      <TouchableOpacity
-        style={[styles.resultItem, { backgroundColor: colors.surface }]}
-        onPress={() => router.push(`/${item.media_type === "tv" ? "series" : item.media_type}/${item.id}`)}
-      >
-        {poster ? (
-          <Image source={{ uri: poster }} style={styles.resultPoster} />
-        ) : (
-          <View style={[styles.resultPoster, { backgroundColor: colors.surfaceAlt }]} />
-        )}
-        <View style={styles.resultInfo}>
-          <Text style={[styles.resultTitle, { color: colors.text }]} numberOfLines={1}>{item.title ?? item.name ?? "Sin título"}</Text>
-            <Text style={[styles.resultMeta, { color: colors.textMuted }]}>
-              {(item.release_date ?? item.first_air_date ?? "").slice(0, 4) || "—"} · {item.vote_average?.toFixed(1) ?? "—"}
-              {item.meta_score != null ? ` · MS ${item.meta_score}` : ""}
-            </Text>
-          <Text style={[styles.resultType, { color: colors.gold }]}>{item.media_type === "movie" ? "Película" : "Serie"}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderItem = ({ item }: { item: TmdbMedia }) => (
+    <SearchResultItem item={item} colors={colors} onPress={() => router.push(`/${item.media_type === "tv" ? "series" : item.media_type}/${item.id}`)} />
+  );
 
   return (
     <TabScreen
@@ -82,6 +62,37 @@ export default function SearchScreen() {
       {query.length >= 2 && !isLoading && !results.length && <Text style={[styles.empty, { color: colors.textMuted }]}>No se encontraron resultados</Text>}
       {isError && <Text style={[styles.error, { color: colors.danger }]}>Error al buscar</Text>}
     </TabScreen>
+  );
+}
+
+interface SearchResultItemProps {
+  item: TmdbMedia;
+  colors: ReturnType<typeof useTheme>["colors"];
+  onPress: () => void;
+}
+
+function SearchResultItem({ item, colors, onPress }: SearchResultItemProps) {
+  const metaScore = useMetaScore(item);
+  const poster = getImageUrl(item.poster_path, "w200");
+  return (
+    <TouchableOpacity
+      style={[styles.resultItem, { backgroundColor: colors.surface }]}
+      onPress={onPress}
+    >
+      {poster ? (
+        <Image source={{ uri: poster }} style={styles.resultPoster} />
+      ) : (
+        <View style={[styles.resultPoster, { backgroundColor: colors.surfaceAlt }]} />
+      )}
+      <View style={styles.resultInfo}>
+        <Text style={[styles.resultTitle, { color: colors.text }]} numberOfLines={1}>{item.title ?? item.name ?? "Sin título"}</Text>
+        <Text style={[styles.resultMeta, { color: colors.textMuted }]}>
+          {(item.release_date ?? item.first_air_date ?? "").slice(0, 4) || "—"} · {item.vote_average?.toFixed(1) ?? "—"}
+          {metaScore != null ? ` · MS ${metaScore}` : ""}
+        </Text>
+        <Text style={[styles.resultType, { color: colors.gold }]}>{item.media_type === "movie" ? "Película" : "Serie"}</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 

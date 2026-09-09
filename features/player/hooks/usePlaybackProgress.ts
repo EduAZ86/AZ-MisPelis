@@ -23,6 +23,7 @@ export function usePlaybackProgress({ input }: PlaybackProgressOptions) {
         season: input.season,
         episode: input.episode,
         addedAt: Date.now(),
+        meta_score: undefined,
       };
       updateProgress(item);
     },

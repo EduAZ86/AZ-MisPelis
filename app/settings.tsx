@@ -1,6 +1,16 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
@@ -28,12 +38,20 @@ export default function SettingsScreen() {
           onPress={() => router.back()}
         >
           <GlassPanel style={styles.tabletBackBtn}>
-            <Ionicons name="chevron-back" size={20} color={glass.active} suppressHighlighting />
+            <Ionicons
+              name="chevron-back"
+              size={20}
+              color={glass.active}
+              suppressHighlighting
+            />
           </GlassPanel>
         </TouchableOpacity>
       )}
 
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.body, isTablet && { paddingTop: 56 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.section}>Apariencia</Text>
         <View style={styles.row}>
           <ModeChip
@@ -105,8 +123,18 @@ function ModeChip({
         },
       ]}
     >
-      <Ionicons name={icon} size={18} color={active ? colors.gold : colors.textMuted} />
-      <Text style={{ color: active ? colors.text : colors.textMuted, fontSize: 14, fontWeight: "700" }}>
+      <Ionicons
+        name={icon}
+        size={18}
+        color={active ? colors.gold : colors.textMuted}
+      />
+      <Text
+        style={{
+          color: active ? colors.text : colors.textMuted,
+          fontSize: 14,
+          fontWeight: "700",
+        }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -123,9 +151,17 @@ function InfoRow({
   colors: ReturnType<typeof useTheme>["colors"];
 }) {
   return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingVertical: 4,
+      }}
+    >
       <Text style={{ color: colors.textMuted, fontSize: 14 }}>{label}</Text>
-      <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600" }}>{value}</Text>
+      <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600" }}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -133,11 +169,11 @@ function InfoRow({
 function createStyles(
   colors: ReturnType<typeof useTheme>["colors"],
   radius: ReturnType<typeof useTheme>["radius"],
-  glass: ReturnType<typeof useTheme>["glass"]
+  glass: ReturnType<typeof useTheme>["glass"],
 ) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-    body: { padding: 16, paddingBottom: 40 },
+    body: { padding: 16, paddingTop: 26, paddingBottom: 40 },
     section: {
       color: colors.textMuted,
       fontSize: 12,
@@ -157,7 +193,10 @@ function createStyles(
       gap: 8,
       marginBottom: 24,
     },
-    divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.border,
+    },
     devName: { color: colors.text, fontSize: 17, fontWeight: "800" },
     devRole: { color: colors.textMuted, fontSize: 13, fontWeight: "500" },
     tabletBack: {
@@ -171,4 +210,3 @@ function createStyles(
     },
   });
 }
-

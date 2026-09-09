@@ -1,7 +1,21 @@
 import React from "react";
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { useFavorites, type FavoriteItem, useContinueWatching, type ContinueWatchingItem } from "@features/favorites";
+import {
+  useFavorites,
+  type FavoriteItem,
+  useContinueWatching,
+  type ContinueWatchingItem,
+} from "@features/favorites";
 import { TabScreen, useTabScrollInsets } from "@core/components/TabScreen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@core/providers/ThemeProvider";
@@ -13,7 +27,8 @@ export default function FavoritesScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const { favorites, toggle } = useFavorites();
-  const { items: continueWatching, remove: removeContinue } = useContinueWatching();
+  const { items: continueWatching, remove: removeContinue } =
+    useContinueWatching();
   const scrollInsets = useTabScrollInsets(56);
 
   const movieFavorites = favorites.filter((f) => f.type === "movie");
@@ -26,7 +41,8 @@ export default function FavoritesScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: isTablet ? insets.top + 16 : scrollInsets.paddingTop,
+          marginTop: isTablet ? 30 : 16,
+          paddingTop: isTablet ? insets.top + 26 : scrollInsets.paddingTop + 16,
           paddingBottom: scrollInsets.paddingBottom,
           paddingHorizontal: 16,
         }}
@@ -35,7 +51,9 @@ export default function FavoritesScreen() {
           <Section title="Continuar viendo">
             <FlatList
               data={continueWatching}
-              keyExtractor={(item) => `cw-${item.type}-${item.id}-${item.season ?? ""}-${item.episode ?? ""}`}
+              keyExtractor={(item) =>
+                `cw-${item.type}-${item.id}-${item.season ?? ""}-${item.episode ?? ""}`
+              }
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.rowContent}
@@ -45,8 +63,19 @@ export default function FavoritesScreen() {
                   cardWidth={cardWidth}
                   colors={colors}
                   radius={radius}
-                  onPress={() => router.push(`/${item.type === "tv" ? "series" : item.type}/${item.id}${item.season ? `?season=${item.season}&episode=${item.episode}` : ""}`)}
-                  onRemove={() => removeContinue(item.id, item.type, item.season, item.episode)}
+                  onPress={() =>
+                    router.push(
+                      `/${item.type === "tv" ? "series" : item.type}/${item.id}${item.season ? `?season=${item.season}&episode=${item.episode}` : ""}`,
+                    )
+                  }
+                  onRemove={() =>
+                    removeContinue(
+                      item.id,
+                      item.type,
+                      item.season,
+                      item.episode,
+                    )
+                  }
                 />
               )}
             />
@@ -97,19 +126,27 @@ export default function FavoritesScreen() {
           </Section>
         )}
 
-        {continueWatching.length === 0 && movieFavorites.length === 0 && seriesFavorites.length === 0 && (
-          <View style={styles.empty}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-              No tienes contenido en tu biblioteca
-            </Text>
-          </View>
-        )}
+        {continueWatching.length === 0 &&
+          movieFavorites.length === 0 &&
+          seriesFavorites.length === 0 && (
+            <View style={styles.empty}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+                No tienes contenido en tu biblioteca
+              </Text>
+            </View>
+          )}
       </ScrollView>
     </TabScreen>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   const { colors } = useTheme();
   return (
     <View style={styles.section}>
@@ -119,7 +156,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function ContinueCard({ item, cardWidth, colors, radius, onPress, onRemove }: {
+function ContinueCard({
+  item,
+  cardWidth,
+  colors,
+  radius,
+  onPress,
+  onRemove,
+}: {
   item: ContinueWatchingItem;
   cardWidth: number;
   colors: ReturnType<typeof useTheme>["colors"];
@@ -128,26 +172,56 @@ function ContinueCard({ item, cardWidth, colors, radius, onPress, onRemove }: {
   onRemove: () => void;
 }) {
   return (
-    <TouchableOpacity style={[styles.card, { width: cardWidth }]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.card, { width: cardWidth }]}
+      onPress={onPress}
+    >
       {item.poster ? (
-        <Image source={{ uri: item.poster }} style={[styles.poster, { borderRadius: radius.md }]} />
+        <Image
+          source={{ uri: item.poster }}
+          style={[styles.poster, { borderRadius: radius.md }]}
+        />
       ) : (
-        <View style={[styles.poster, { borderRadius: radius.md, backgroundColor: colors.surfaceAlt }]} />
+        <View
+          style={[
+            styles.poster,
+            { borderRadius: radius.md, backgroundColor: colors.surfaceAlt },
+          ]}
+        />
       )}
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+          {item.title}
+        </Text>
         {item.season && item.episode && (
-          <Text style={[styles.episode, { color: colors.gold }]}>T{item.season} E{item.episode}</Text>
+          <Text style={[styles.episode, { color: colors.gold }]}>
+            T{item.season} E{item.episode}
+          </Text>
+        )}
+        {item.meta_score != null && (
+          <Text style={[styles.metaScore, { color: colors.creamMuted }]}>
+            MS {item.meta_score}
+          </Text>
         )}
         {"progress" in item && (
-          <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-            <View style={[styles.progressFill, { flex: item.progress, backgroundColor: colors.primary }]} />
+          <View
+            style={[styles.progressBar, { backgroundColor: colors.border }]}
+          >
+            <View
+              style={[
+                styles.progressFill,
+                { flex: item.progress, backgroundColor: colors.primary },
+              ]}
+            />
           </View>
         )}
       </View>
       <TouchableOpacity
         style={[styles.removeBtn, { backgroundColor: colors.primaryDark }]}
-        onPress={(e) => { e.stopPropagation(); onRemove(); }}
+        onPress={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
       >
         <Text style={styles.removeBtnText}>✕</Text>
       </TouchableOpacity>
@@ -155,7 +229,14 @@ function ContinueCard({ item, cardWidth, colors, radius, onPress, onRemove }: {
   );
 }
 
-function FavoriteCard({ item, cardWidth, colors, radius, onPress, onRemove }: {
+function FavoriteCard({
+  item,
+  cardWidth,
+  colors,
+  radius,
+  onPress,
+  onRemove,
+}: {
   item: FavoriteItem;
   cardWidth: number;
   colors: ReturnType<typeof useTheme>["colors"];
@@ -164,15 +245,36 @@ function FavoriteCard({ item, cardWidth, colors, radius, onPress, onRemove }: {
   onRemove: () => void;
 }) {
   return (
-    <TouchableOpacity style={[styles.card, { width: cardWidth }]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.card, { width: cardWidth }]}
+      onPress={onPress}
+    >
       {item.poster ? (
-        <Image source={{ uri: item.poster }} style={[styles.poster, { borderRadius: radius.md }]} />
+        <Image
+          source={{ uri: item.poster }}
+          style={[styles.poster, { borderRadius: radius.md }]}
+        />
       ) : (
-        <View style={[styles.poster, { borderRadius: radius.md, backgroundColor: colors.surfaceAlt }]} />
+        <View
+          style={[
+            styles.poster,
+            { borderRadius: radius.md, backgroundColor: colors.surfaceAlt },
+          ]}
+        />
+      )}
+      {item.meta_score != null && (
+        <View style={[styles.scoreBadge, { backgroundColor: colors.overlay }]}>
+          <Text style={[styles.scoreBadgeText, { color: colors.gold }]}>
+            MS {item.meta_score}
+          </Text>
+        </View>
       )}
       <TouchableOpacity
         style={[styles.removeBtn, { backgroundColor: colors.primaryDark }]}
-        onPress={(e) => { e.stopPropagation(); onRemove(); }}
+        onPress={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
       >
         <Text style={styles.removeBtnText}>✕</Text>
       </TouchableOpacity>
@@ -211,10 +313,41 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 11, fontWeight: "600", marginBottom: 2 },
   episode: { fontSize: 10 },
-  progressBar: { height: 3, borderRadius: 1.5, marginTop: 4, overflow: "hidden" },
+  metaScore: { fontSize: 10, fontWeight: "600", marginTop: 2 },
+  scoreBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.16)",
+  },
+  scoreBadgeText: { fontSize: 10, fontWeight: "700" },
+  progressBar: {
+    height: 3,
+    borderRadius: 1.5,
+    marginTop: 4,
+    overflow: "hidden",
+  },
   progressFill: { height: "100%" },
-  removeBtn: { position: "absolute", top: 4, right: 4, width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  removeBtn: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   removeBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
-  empty: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
+  empty: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
   emptyText: { fontSize: 16, textAlign: "center" },
 });

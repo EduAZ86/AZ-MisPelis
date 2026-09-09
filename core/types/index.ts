@@ -98,6 +98,7 @@ export interface ContinueWatchingItem {
   season?: number;
   episode?: number;
   addedAt: number;
+  meta_score?: number;
 }
 
 export interface TmdbGenre {

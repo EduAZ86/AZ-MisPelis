@@ -23,3 +23,4 @@ export { CatalogSectionRow } from "./components/CatalogSectionRow";
 export { MediaGrid, FilterModal, sortLabelFor } from "./components/CatalogGrid";
 export { HeroCard } from "./components/HeroCard";
 export { GenreChips } from "./components/GenreChips";
+export { useMetaScore } from "./hooks/useMetaScore";

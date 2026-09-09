@@ -14,6 +14,7 @@ import {
 import { getImageUrl } from "@services/tmdb";
 import { useTabScrollInsets } from "@core/components/TabScreen";
 import { theme } from "@core/theme";
+import { useMetaScore } from "../hooks/useMetaScore";
 import type { TmdbMedia, TmdbGenre, CatalogFilters, CatalogSortBy } from "@core/types";
 
 const { colors, radius } = theme;
@@ -67,27 +68,7 @@ export function MediaGrid({ data, onPressItem, onEndReached, loading, emptyText,
       data={data}
       keyExtractor={(item) => `${item.media_type}-${item.id}`}
       renderItem={({ item }) => (
-        <TouchableOpacity style={[gridStyles.card, { width: cardWidth }]} onPress={() => onPressItem(item)}>
-          {getImageUrl(item.poster_path, "w342") ? (
-            <Image source={{ uri: getImageUrl(item.poster_path, "w342") }} style={gridStyles.poster} />
-          ) : (
-            <View style={[gridStyles.poster, gridStyles.placeholder]} />
-          )}
-          <View style={gridStyles.overlay}>
-            <Text style={gridStyles.title} numberOfLines={1}>{item.title ?? item.name ?? "Sin título"}</Text>
-            <View style={gridStyles.metaRow}>
-              <Text style={gridStyles.year}>
-                {(item.release_date ?? item.first_air_date ?? "").slice(0, 4) || "—"}
-              </Text>
-              <View style={gridStyles.ratingRow}>
-                <Text style={gridStyles.rating}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
-                {item.meta_score != null ? (
-                  <Text style={gridStyles.metaScore}>MS {item.meta_score}</Text>
-                ) : null}
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
+        <GridCard item={item} cardWidth={cardWidth} onPress={() => onPressItem(item)} />
       )}
       numColumns={numColumns}
       columnWrapperStyle={gridStyles.column}
@@ -100,6 +81,39 @@ export function MediaGrid({ data, onPressItem, onEndReached, loading, emptyText,
       ListFooterComponent={loading ? <ActivityIndicator size="small" color={colors.primary} style={gridStyles.footer} /> : null}
       showsVerticalScrollIndicator={false}
     />
+  );
+}
+
+// ---------- GridCard ----------
+
+interface GridCardProps {
+  item: TmdbMedia;
+  cardWidth: `${number}%`;
+  onPress: () => void;
+}
+
+function GridCard({ item, cardWidth, onPress }: GridCardProps) {
+  const metaScore = useMetaScore(item);
+  return (
+    <TouchableOpacity style={[gridStyles.card, { width: cardWidth }]} onPress={onPress}>
+      {getImageUrl(item.poster_path, "w342") ? (
+        <Image source={{ uri: getImageUrl(item.poster_path, "w342") }} style={gridStyles.poster} />
+      ) : (
+        <View style={[gridStyles.poster, gridStyles.placeholder]} />
+      )}
+      <View style={gridStyles.overlay}>
+        <Text style={gridStyles.title} numberOfLines={1}>{item.title ?? item.name ?? "Sin título"}</Text>
+        <View style={gridStyles.metaRow}>
+          <Text style={gridStyles.year}>
+            {(item.release_date ?? item.first_air_date ?? "").slice(0, 4) || "—"}
+          </Text>
+          <View style={gridStyles.ratingRow}>
+            <Text style={gridStyles.rating}>★ {item.vote_average?.toFixed(1) ?? "—"}</Text>
+            {metaScore != null ? <Text style={gridStyles.metaScore}>MS {metaScore}</Text> : null}
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 
