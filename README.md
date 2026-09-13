@@ -79,7 +79,22 @@ npm run android    # Ejecutar en emulador Android
 
 La app corre en macOS mediante el binario de iPadOS ("Designed for iPad"), disponible **solo en Macs con Apple Silicon**. No es un target macOS nativo.
 
-Requisitos: Mac Apple Silicon + Xcode. La primera compilación requiere una cuenta de Apple configurada en Xcode (firma automática).
+Requisitos: Mac Apple Silicon + Xcode (línea de comandos) y una cuenta de Apple configurada para firma automática.
+
+#### Instalar en el Mac sin abrir Xcode (recomendado)
+
+Compila un **Release standalone** (JS embebido, sin Metro) y lo instala como app en `~/Applications`, lista para abrir desde **Launchpad/Spotlight**:
+
+```bash
+npm run macos:install
+```
+
+- No abre la app Xcode ni necesita Metro.
+- Crea la app "envuelta" (*wrapper* iOS-on-Mac) que macOS exige para ejecutar apps de iPad.
+- Con **cuenta personal gratuita** el perfil caduca a los **~7 días**: vuelve a ejecutar `npm run macos:install` para reinstalar.
+- Si macOS la bloquea la primera vez: Ajustes > Privacidad y seguridad > "Abrir igualmente".
+
+#### Ejecutar desde Xcode (alternativa, desarrollo)
 
 ```bash
 # 1. Generar/actualizar el proyecto iOS (si `ios/` no existe)
@@ -88,16 +103,12 @@ npx expo prebuild --platform ios
 # 2. Levantar Metro
 npm start
 
-# 3. Compilar para "My Mac"
-npm run macos
-
-# 4. Abrir el proyecto en Xcode para ejecutar
+# 3. Abrir el proyecto en Xcode y pulsar Run (⌘R)
 npm run macos:xcode
-#    En Xcode: selecciona el scheme `misPelis` y el destino
-#    "My Mac (Designed for iPad)", y pulsa Run (⌘R).
+#    En Xcode: scheme `misPelis` + destino "My Mac (Designed for iPad)"
 ```
 
-> Nota: ejecutar la app con `open` desde la terminal no funciona para builds de desarrollo; macOS instala y lanza las apps de iPad a través de Xcode.
+> Nota: `npm run macos` y `npm run macos:release` solo compilan, no instalan ni lanzan. Para lanzar sin abrir Xcode usa `npm run macos:install`.
 
 ### Release en iPad físico
 
