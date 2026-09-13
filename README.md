@@ -50,9 +50,10 @@ Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 ### Requisitos
 
 - Node ≥ 20.19
-- Xcode ≥ 26.4 (para iOS/macOS)
+- Xcode ≥ 26.4 (para iOS/macOS). Verificado con Xcode 26.6 desplegando a un iPad con iPadOS 27
 - Android SDK 36 (para Android)
 - Mac con Apple Silicon (para macOS)
+- Cuenta de Apple (la personal **gratuita** permite instalar por cable; la app caduca a los ~7 días)
 
 ### Pasos
 
@@ -97,6 +98,32 @@ npm run macos:xcode
 ```
 
 > Nota: ejecutar la app con `open` desde la terminal no funciona para builds de desarrollo; macOS instala y lanza las apps de iPad a través de Xcode.
+
+### Release en iPad físico
+
+Compila una app **standalone** (con el JS embebido, sin necesitar Metro) y la instala por cable en el iPad. Requiere que el iPad tenga **Developer Mode** activado y esté emparejado con este Mac.
+
+```bash
+# 1. Compilar (Release, firma automática) e instalar en el iPad
+npm run ipad:release
+
+# Alternativa manual
+xcodebuild -workspace ios/misPelis.xcworkspace -scheme misPelis \
+  -configuration Release \
+  -destination 'platform=iOS,name=iPad Eduardo' \
+  -derivedDataPath ios/build -allowProvisioningUpdates build
+xcrun devicectl device install app --device 'iPad Eduardo' \
+  ios/build/Build/Products/Release-iphoneos/misPelis.app
+
+# 2. Tras la primera instalación, confía en el perfil de desarrollador en el iPad:
+#    Ajustes > General > VPN y gestión de dispositivos > App de desarrollador > Confiar
+```
+
+Notas:
+- Verificado con **Xcode 26.6** sobre un iPad con **iPadOS 27**.
+- Con cuenta personal gratuita la app **caduca a los ~7 días**; reinstálala volviendo a correr el comando.
+- Para compilar en **Release** para este Mac ("My Mac (Designed for iPad)"): `npm run macos:release` (se ejecuta desde Xcode).
+- Evita tener corriendo otras apps con el bundle id `com.mispelis.app` (p. ej. la app Electron anterior) al lanzar en el Mac.
 
 ## ⚠️ Aviso legal
 
