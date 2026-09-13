@@ -27,6 +27,19 @@ export default function MovieScreen() {
 
   const { data: detail, isLoading, isError, error: detailError } = useGetDetail("movie", movieId);
 
+  const playback = React.useMemo(
+    () =>
+      detail
+        ? {
+            input: { type: "movie" as const, id: movieId },
+            title: detail.title ?? "",
+            poster: getImageUrl(detail.poster_path, "w500") ?? "",
+            meta_score: detail.meta_score,
+          }
+        : undefined,
+    [detail, movieId]
+  );
+
   const [showSources, setShowSources] = useState(false);
   const [playSource, setPlaySource] = useState<StreamSource | null>(null);
 
@@ -212,6 +225,7 @@ export default function MovieScreen() {
               sources={sources}
               onSelectSource={handleSelectSource}
               playbackError={resolveError}
+              playback={playback}
             />
           </View>
         )}

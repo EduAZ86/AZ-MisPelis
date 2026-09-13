@@ -32,6 +32,24 @@ export default function TVScreen() {
   const [showSources, setShowSources] = useState(false);
   const [playSource, setPlaySource] = useState<StreamSource | null>(null);
 
+  const playback = React.useMemo(
+    () =>
+      detail
+        ? {
+            input: {
+              type: "tv" as const,
+              id: tvId,
+              season: selectedSeason,
+              episode: selectedEpisode,
+            },
+            title: detail.name ?? "",
+            poster: getImageUrl(detail.poster_path, "w500") ?? "",
+            meta_score: detail.meta_score,
+          }
+        : undefined,
+    [detail, tvId, selectedSeason, selectedEpisode]
+  );
+
   const { data: servers, isLoading: serversLoading, isError: serversError, refetch: loadServers } =
     useGetServers(
       { type: "tv", id: tvId, season: selectedSeason, episode: selectedEpisode },
@@ -292,6 +310,7 @@ export default function TVScreen() {
               sources={sources}
               onSelectSource={handleSelectSource}
               playbackError={resolveError}
+              playback={playback}
             />
           </View>
         )}

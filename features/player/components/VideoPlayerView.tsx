@@ -1,8 +1,17 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback, useRef, useState } from "react";
 import { View, StyleSheet, Text, Modal, useWindowDimensions } from "react-native";
-import { VideoView, VideoPlayer, useVideoPlayer, type VideoConfig } from "react-native-video";
+import {
+  VideoView,
+  VideoPlayer,
+  useVideoPlayer,
+  useEvent,
+  type VideoConfig,
+  type onLoadData,
+  type onProgressData,
+} from "react-native-video";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { SourcePicker } from "../source-picker/SourcePicker";
+import { usePlaybackProgress, type PlaybackMetadata } from "../hooks/usePlaybackProgress";
 import type { StreamSource } from "@core/types";
 
 interface VideoPlayerViewProps {
@@ -10,6 +19,7 @@ interface VideoPlayerViewProps {
   sources: StreamSource[];
   onSelectSource: (source: StreamSource) => void;
   playbackError?: string | null;
+  playback?: PlaybackMetadata;
 }
 
 export function VideoPlayerView({
@@ -17,6 +27,7 @@ export function VideoPlayerView({
   sources,
   onSelectSource,
   playbackError,
+  playback,
 }: VideoPlayerViewProps) {
   if (!currentSource) {
     return null;
@@ -29,6 +40,7 @@ export function VideoPlayerView({
       sources={sources}
       onSelectSource={onSelectSource}
       playbackError={playbackError}
+      playback={playback}
     />
   );
 }
@@ -38,9 +50,10 @@ interface VideoPlayerInnerProps {
   sources: StreamSource[];
   onSelectSource: (source: StreamSource) => void;
   playbackError?: string | null;
+  playback?: PlaybackMetadata;
 }
 
-function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackError }: VideoPlayerInnerProps) {
+function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackError, playback }: VideoPlayerInnerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
@@ -55,6 +68,63 @@ function VideoPlayerInner({ currentSource, sources, onSelectSource, playbackErro
     p.playInBackground = true;
     p.showNotificationControls = true;
   });
+
+  const { saveProgress, getProgress, clearProgress } = usePlaybackProgress({
+    input: playback?.input ?? { type: "movie", id: 0 },
+    title: playback?.title,
+    poster: playback?.poster,
+    meta_score: playback?.meta_score,
+  });
+
+  const durationRef = useRef(0);
+  const positionRef = useRef(0);
+  const lastSavedRef = useRef(0);
+  const resumedRef = useRef(false);
+
+  const handleLoad = useCallback(
+    (data: onLoadData) => {
+      durationRef.current = Number.isFinite(data.duration) ? data.duration : 0;
+      if (!resumedRef.current && durationRef.current > 0) {
+        const saved = getProgress();
+        if (saved > 0.01 && saved < 0.95) {
+          player.seekTo(saved * durationRef.current);
+        }
+        resumedRef.current = true;
+      }
+    },
+    [getProgress, player]
+  );
+
+  const handleProgress = useCallback(
+    (data: onProgressData) => {
+      const duration = durationRef.current;
+      if (duration <= 0) return;
+      positionRef.current = data.currentTime;
+      const now = Date.now();
+      if (now - lastSavedRef.current < 5000 && data.currentTime < duration - 5) return;
+      lastSavedRef.current = now;
+      saveProgress(data.currentTime, duration);
+    },
+    [saveProgress]
+  );
+
+  const handleEnd = useCallback(() => {
+    clearProgress();
+  }, [clearProgress]);
+
+  useEvent(player, "onLoad", handleLoad);
+  useEvent(player, "onProgress", handleProgress);
+  useEvent(player, "onEnd", handleEnd);
+
+  useEffect(() => {
+    return () => {
+      const duration = durationRef.current;
+      const position = positionRef.current;
+      if (duration > 0 && position > 0 && position < duration * 0.95) {
+        saveProgress(position, duration);
+      }
+    };
+  }, [saveProgress]);
 
   useEffect(() => {
     return () => {
