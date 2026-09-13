@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/icon.png" alt="misPelis" width="180" />
+
 # 🎬 misPelis
 
 ![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android-34d399?style=for-the-badge)

@@ -1,5 +1,19 @@
 # Changelog - misPelis
 
+## 1.5.3 — 13 de septiembre de 2026
+
+### Favoritos — Estado compartido entre pantallas
+- Nuevo store `features/favorites/store.ts` basado en `useSyncExternalStore`: favoritos y "Continuar viendo" ahora comparten un único estado global en lugar de `useState` por instancia del hook
+- Corregido: al marcar/desmarcar un favorito en el detalle de película o serie, la tab Biblioteca se actualiza al instante (antes requería reiniciar la app)
+- Corregido: el botón ★/☆ de favoritos queda sincronizado entre todas las pantallas
+- Hidratación única desde `AsyncStorage` con merge seguro si ocurre una mutación durante la carga; se mantienen las claves `@mispelis:favorites:v1` y `@mispelis:continueWatching:v1` (sin migración de datos)
+
+### Continuar viendo — Datos reales y conexión con el reproductor
+- `usePlaybackProgress` ahora persiste `title`, `poster` y `meta_score` reales (antes guardaba cadenas vacías) y almacena el progreso como fracción de la duración
+- `VideoPlayerView` se conecta a los eventos `onLoad`, `onProgress` (guardado cada ~5 s) y `onEnd`, y reanuda la reproducción desde la posición guardada
+- Las pantallas `movie/[id].tsx` y `series/[id].tsx` pasan la metadata de reproducción al reproductor
+- Al finalizar un video se limpia su entrada de "Continuar viendo"
+
 ## 1.5.2 — 6 de septiembre de 2026
 
 ### Icono de aplicación — Logo pelusito
