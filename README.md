@@ -4,8 +4,8 @@
 
 # 🎬 misPelis
 
-![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android-34d399?style=for-the-badge)
-![Versión](https://img.shields.io/badge/versión-1.5.2-1f6feb?style=for-the-badge)
+![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android%20%7C%20macOS-34d399?style=for-the-badge)
+![Versión](https://img.shields.io/badge/versión-1.6.0-1f6feb?style=for-the-badge)
 
 **Aplicación multiplataforma para descubrir y reproducir películas y series**, catalogadas en TMDB, con fuentes de video en español latino.
 
@@ -30,19 +30,18 @@ misPelis te permite explorar el catálogo completo de **TMDB** (tendencias, desc
 | | |
 |---|---|
 | **Autor** | Eduardo Ayaviri (`eduardo@vert.run`) |
-| **Última actualización** | 9 de septiembre de 2026 |
-| **Versión actual** | 1.5.2 |
+| **Última actualización** | 13 de septiembre de 2026 |
+| **Versión actual** | 1.6.0 |
 
-### Mejoras de esta versión (1.5.2) respecto a versiones anteriores
+### Mejoras de esta versión (1.6.0) respecto a versiones anteriores
 
-- **Icono oficial**: la app ahora usa el logo "pelusito" en su icono nativo en iOS y Android.
-- **Navegación en tablet corregida**: los botones de navegación ya no desaparecen en Películas/Series, y ahora siempre hay una forma de volver desde cualquier pantalla.
-- **Filtros integrados en la barra de navegación** (iPadOS): los chips de orden/género/año se muestran dentro de la navbar.
-- **Búsqueda desde la barra de navegación** (iPadOS): al escribir, la navbar muestra el campo de búsqueda a pantalla completa.
-- **Reproductor mejorado**: al seleccionar un servidor la fuente se carga automáticamente (sin botón "Reproducir"), y el video ya no se recorta en iPad.
-- **Metascore**: ahora puedes ver y ordenar el catálogo por puntuación Metascore.
+- **Soporte macOS (Designed for iPad)**: la app ahora puede compilarse y ejecutarse en Macs con Apple Silicon usando el binario de iPadOS.
+- **Favoritos sincronizados**: estado compartido entre pantallas; marcar/desmarcar un favorito se refleja al instante en la biblioteca.
+- **Continuar viendo funcional**: guarda título, póster y progreso reales, y reanuda la reproducción desde donde quedaste.
+- **Icono oficial**: la app usa el logo "pelusito" en su icono nativo en iOS y Android.
+- **Navegación en tablet corregida**: los botones de navegación ya no desaparecen en Películas/Series.
+- **Reproductor mejorado**: al seleccionar un servidor la fuente se carga automáticamente (sin botón "Reproducir").
 - **Biblioteca reorganizada**: "Continuar viendo", "Películas favoritas" y "Series favoritas" en secciones independientes.
-- **Tamaños táctiles más grandes** en la barra de navegación, más fáciles de pulsar.
 
 Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 
@@ -51,8 +50,9 @@ Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 ### Requisitos
 
 - Node ≥ 20.19
-- Xcode ≥ 26.4 (para iOS)
+- Xcode ≥ 26.4 (para iOS/macOS)
 - Android SDK 36 (para Android)
+- Mac con Apple Silicon (para macOS)
 
 ### Pasos
 
@@ -73,6 +73,30 @@ npm start          # Servidor de desarrollo Expo
 npm run ios        # Ejecutar en simulador iOS
 npm run android    # Ejecutar en emulador Android
 ```
+
+### macOS (Designed for iPad)
+
+La app corre en macOS mediante el binario de iPadOS ("Designed for iPad"), disponible **solo en Macs con Apple Silicon**. No es un target macOS nativo.
+
+Requisitos: Mac Apple Silicon + Xcode. La primera compilación requiere una cuenta de Apple configurada en Xcode (firma automática).
+
+```bash
+# 1. Generar/actualizar el proyecto iOS (si `ios/` no existe)
+npx expo prebuild --platform ios
+
+# 2. Levantar Metro
+npm start
+
+# 3. Compilar para "My Mac"
+npm run macos
+
+# 4. Abrir el proyecto en Xcode para ejecutar
+npm run macos:xcode
+#    En Xcode: selecciona el scheme `misPelis` y el destino
+#    "My Mac (Designed for iPad)", y pulsa Run (⌘R).
+```
+
+> Nota: ejecutar la app con `open` desde la terminal no funciona para builds de desarrollo; macOS instala y lanza las apps de iPad a través de Xcode.
 
 ## ⚠️ Aviso legal
 

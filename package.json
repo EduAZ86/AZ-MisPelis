@@ -38,6 +38,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "macos": "xcodebuild -workspace ios/misPelis.xcworkspace -scheme misPelis -configuration Debug -destination 'platform=macOS,variant=Designed for iPad' -derivedDataPath ios/build -allowProvisioningUpdates build",
+    "macos:xcode": "open ios/misPelis.xcworkspace",
     "web": "expo start --web",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "vitest run",
