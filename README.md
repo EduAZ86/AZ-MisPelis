@@ -9,7 +9,22 @@
 
 **Aplicación multiplataforma para descubrir y reproducir películas y series**, catalogadas en TMDB, con fuentes de video en español latino.
 
+[![Descargar APK](https://img.shields.io/badge/⬇️%20Descargar%20APK%20Android-1.5.3-3ddc84?style=for-the-badge)](https://github.com/EduAZ86/AZ-MisPelis/releases/download/v1.5.3/misPelis-1.5.3.apk)
+
 </div>
+
+---
+
+## 📥 Descargar
+
+**[⬇️ Descargar misPelis 1.5.3 para Android (APK)](https://github.com/EduAZ86/AZ-MisPelis/releases/download/v1.5.3/misPelis-1.5.3.apk)** (~118 MB)
+
+- **Versión:** 1.5.3 (`versionCode 10503`)
+- **Requisitos:** Android 7.0+ / Android TV
+- **Instalación:** descarga el APK en tu dispositivo, habilita "Instalar apps de origen desconocido" y ábrelo para instalar.
+- **Nota:** el APK está firmado con la debug keystore; pensado para uso personal y pruebas, no para Google Play.
+
+Todas las versiones están disponibles en la página de [Releases](https://github.com/EduAZ86/AZ-MisPelis/releases).
 
 ---
 
