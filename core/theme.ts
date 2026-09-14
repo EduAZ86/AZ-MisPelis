@@ -81,8 +81,8 @@ export type ThemeTokens = {
 export const theme = dark;
 
 export const APP_META = {
-  version: "1.5.2",
-  releaseDate: "6 de septiembre de 2026",
+  version: "1.5.3",
+  releaseDate: "13 de septiembre de 2026",
   developer: {
     name: "Eduardo Ayaviri",
     role: "Frontend & Mobile Developer",

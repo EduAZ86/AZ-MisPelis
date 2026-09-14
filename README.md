@@ -5,7 +5,7 @@
 # 🎬 misPelis
 
 ![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android-34d399?style=for-the-badge)
-![Versión](https://img.shields.io/badge/versión-1.5.2-1f6feb?style=for-the-badge)
+![Versión](https://img.shields.io/badge/versión-1.5.3-1f6feb?style=for-the-badge)
 
 **Aplicación multiplataforma para descubrir y reproducir películas y series**, catalogadas en TMDB, con fuentes de video en español latino.
 
@@ -30,19 +30,19 @@ misPelis te permite explorar el catálogo completo de **TMDB** (tendencias, desc
 | | |
 |---|---|
 | **Autor** | Eduardo Ayaviri (`eduardo@vert.run`) |
-| **Última actualización** | 9 de septiembre de 2026 |
-| **Versión actual** | 1.5.2 |
+| **Última actualización** | 13 de septiembre de 2026 |
+| **Versión actual** | 1.5.3 |
 
-### Mejoras de esta versión (1.5.2) respecto a versiones anteriores
+### Mejoras de esta versión (1.5.3) respecto a versiones anteriores
 
-- **Icono oficial**: la app ahora usa el logo "pelusito" en su icono nativo en iOS y Android.
+- **Favoritos con estado compartido**: marcar o desmarcar un favorito en el detalle de una película o serie ahora se refleja al instante en todas las pantallas, incluida la tab Biblioteca (antes requería reiniciar la app).
+- **"Continuar viendo" con datos reales**: el progreso de reproducción guarda el título, póster y metascore reales, y se reanuda desde la posición exacta donde lo dejaste.
+- **Sincronización del reproductor**: el progreso se guarda cada ~5 s durante la reproducción y la entrada se limpia automáticamente al terminar el video.
+- **Icono oficial**: la app usa el logo "pelusito" en su icono nativo en iOS y Android.
 - **Navegación en tablet corregida**: los botones de navegación ya no desaparecen en Películas/Series, y ahora siempre hay una forma de volver desde cualquier pantalla.
-- **Filtros integrados en la barra de navegación** (iPadOS): los chips de orden/género/año se muestran dentro de la navbar.
-- **Búsqueda desde la barra de navegación** (iPadOS): al escribir, la navbar muestra el campo de búsqueda a pantalla completa.
+- **Filtros y búsqueda integrados en la barra de navegación** (iPadOS).
 - **Reproductor mejorado**: al seleccionar un servidor la fuente se carga automáticamente (sin botón "Reproducir"), y el video ya no se recorta en iPad.
-- **Metascore**: ahora puedes ver y ordenar el catálogo por puntuación Metascore.
-- **Biblioteca reorganizada**: "Continuar viendo", "Películas favoritas" y "Series favoritas" en secciones independientes.
-- **Tamaños táctiles más grandes** en la barra de navegación, más fáciles de pulsar.
+- **Metascore**: puedes ver y ordenar el catálogo por puntuación Metascore.
 
 Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 
