@@ -42,11 +42,11 @@ misPelis te permite explorar el catálogo completo de **TMDB** (tendencias, desc
 
 ## 🏷️ Información del proyecto
 
-| | |
-|---|---|
-| **Autor** | Eduardo Ayaviri (`eduardo@vert.run`) |
-| **Última actualización** | 13 de septiembre de 2026 |
-| **Versión actual** | 1.5.3 |
+|                          |                                              |
+| ------------------------ | -------------------------------------------- |
+| **Autor**                | Eduardo Ayaviri (`eduardoayaviri@gmail.com`) |
+| **Última actualización** | 13 de septiembre de 2026                     |
+| **Versión actual**       | 1.5.3                                        |
 
 ### Mejoras de esta versión (1.5.3) respecto a versiones anteriores
 
