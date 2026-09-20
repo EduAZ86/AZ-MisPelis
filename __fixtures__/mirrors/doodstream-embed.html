@@ -1,0 +1,12 @@
+<HTML>
+<BODY>
+<div id="vplayer"></div>
+<script type="text/javascript">
+$.get('/pass_md5/1a2b3c4d5e/9f8e7d6c5b', function(data) {
+  var token = '9f8e7d6c5b';
+  $("#vplayer").attr("src", data + "zUEJeL3mUN" + "?token=" + token + "&expiry=" + Math.floor(Date.now()/1000));
+});
+function makePlay() { return "zUEJeL3mUN"; }
+</script>
+</BODY>
+</HTML>
