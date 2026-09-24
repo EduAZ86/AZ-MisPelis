@@ -4,8 +4,8 @@
 
 # 🎬 misPelis
 
-![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android-34d399?style=for-the-badge)
-![Versión](https://img.shields.io/badge/versión-1.5.2-1f6feb?style=for-the-badge)
+![Plataformas](https://img.shields.io/badge/plataformas-iOS%20%7C%20iPadOS%20%7C%20Android%20%7C%20macOS-34d399?style=for-the-badge)
+![Versión](https://img.shields.io/badge/versión-1.6.0-1f6feb?style=for-the-badge)
 
 **Aplicación multiplataforma para descubrir y reproducir películas y series**, catalogadas en TMDB, con fuentes de video en español latino.
 
@@ -30,19 +30,18 @@ misPelis te permite explorar el catálogo completo de **TMDB** (tendencias, desc
 | | |
 |---|---|
 | **Autor** | Eduardo Ayaviri (`eduardo@vert.run`) |
-| **Última actualización** | 9 de septiembre de 2026 |
-| **Versión actual** | 1.5.2 |
+| **Última actualización** | 13 de septiembre de 2026 |
+| **Versión actual** | 1.6.0 |
 
-### Mejoras de esta versión (1.5.2) respecto a versiones anteriores
+### Mejoras de esta versión (1.6.0) respecto a versiones anteriores
 
-- **Icono oficial**: la app ahora usa el logo "pelusito" en su icono nativo en iOS y Android.
-- **Navegación en tablet corregida**: los botones de navegación ya no desaparecen en Películas/Series, y ahora siempre hay una forma de volver desde cualquier pantalla.
-- **Filtros integrados en la barra de navegación** (iPadOS): los chips de orden/género/año se muestran dentro de la navbar.
-- **Búsqueda desde la barra de navegación** (iPadOS): al escribir, la navbar muestra el campo de búsqueda a pantalla completa.
-- **Reproductor mejorado**: al seleccionar un servidor la fuente se carga automáticamente (sin botón "Reproducir"), y el video ya no se recorta en iPad.
-- **Metascore**: ahora puedes ver y ordenar el catálogo por puntuación Metascore.
+- **Soporte macOS (Designed for iPad)**: la app ahora puede compilarse y ejecutarse en Macs con Apple Silicon usando el binario de iPadOS.
+- **Favoritos sincronizados**: estado compartido entre pantallas; marcar/desmarcar un favorito se refleja al instante en la biblioteca.
+- **Continuar viendo funcional**: guarda título, póster y progreso reales, y reanuda la reproducción desde donde quedaste.
+- **Icono oficial**: la app usa el logo "pelusito" en su icono nativo en iOS y Android.
+- **Navegación en tablet corregida**: los botones de navegación ya no desaparecen en Películas/Series.
+- **Reproductor mejorado**: al seleccionar un servidor la fuente se carga automáticamente (sin botón "Reproducir").
 - **Biblioteca reorganizada**: "Continuar viendo", "Películas favoritas" y "Series favoritas" en secciones independientes.
-- **Tamaños táctiles más grandes** en la barra de navegación, más fáciles de pulsar.
 
 Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 
@@ -51,8 +50,10 @@ Consulta el historial completo en [CHANGELOG.md](./CHANGELOG.md).
 ### Requisitos
 
 - Node ≥ 20.19
-- Xcode ≥ 26.4 (para iOS)
+- Xcode ≥ 26.4 (para iOS/macOS). Verificado con Xcode 26.6 desplegando a un iPad con iPadOS 27
 - Android SDK 36 (para Android)
+- Mac con Apple Silicon (para macOS)
+- Cuenta de Apple (la personal **gratuita** permite instalar por cable; la app caduca a los ~7 días)
 
 ### Pasos
 
@@ -73,6 +74,67 @@ npm start          # Servidor de desarrollo Expo
 npm run ios        # Ejecutar en simulador iOS
 npm run android    # Ejecutar en emulador Android
 ```
+
+### macOS (Designed for iPad)
+
+La app corre en macOS mediante el binario de iPadOS ("Designed for iPad"), disponible **solo en Macs con Apple Silicon**. No es un target macOS nativo.
+
+Requisitos: Mac Apple Silicon + Xcode (línea de comandos) y una cuenta de Apple configurada para firma automática.
+
+#### Instalar en el Mac sin abrir Xcode (recomendado)
+
+Compila un **Release standalone** (JS embebido, sin Metro) y lo instala como app en `~/Applications`, lista para abrir desde **Launchpad/Spotlight**:
+
+```bash
+npm run macos:install
+```
+
+- No abre la app Xcode ni necesita Metro.
+- Crea la app "envuelta" (*wrapper* iOS-on-Mac) que macOS exige para ejecutar apps de iPad.
+- Con **cuenta personal gratuita** el perfil caduca a los **~7 días**: vuelve a ejecutar `npm run macos:install` para reinstalar.
+- Si macOS la bloquea la primera vez: Ajustes > Privacidad y seguridad > "Abrir igualmente".
+
+#### Ejecutar desde Xcode (alternativa, desarrollo)
+
+```bash
+# 1. Generar/actualizar el proyecto iOS (si `ios/` no existe)
+npx expo prebuild --platform ios
+
+# 2. Levantar Metro
+npm start
+
+# 3. Abrir el proyecto en Xcode y pulsar Run (⌘R)
+npm run macos:xcode
+#    En Xcode: scheme `misPelis` + destino "My Mac (Designed for iPad)"
+```
+
+> Nota: `npm run macos` y `npm run macos:release` solo compilan, no instalan ni lanzan. Para lanzar sin abrir Xcode usa `npm run macos:install`.
+
+### Release en iPad físico
+
+Compila una app **standalone** (con el JS embebido, sin necesitar Metro) y la instala por cable en el iPad. Requiere que el iPad tenga **Developer Mode** activado y esté emparejado con este Mac.
+
+```bash
+# 1. Compilar (Release, firma automática) e instalar en el iPad
+npm run ipad:release
+
+# Alternativa manual
+xcodebuild -workspace ios/misPelis.xcworkspace -scheme misPelis \
+  -configuration Release \
+  -destination 'platform=iOS,name=iPad Eduardo' \
+  -derivedDataPath ios/build -allowProvisioningUpdates build
+xcrun devicectl device install app --device 'iPad Eduardo' \
+  ios/build/Build/Products/Release-iphoneos/misPelis.app
+
+# 2. Tras la primera instalación, confía en el perfil de desarrollador en el iPad:
+#    Ajustes > General > VPN y gestión de dispositivos > App de desarrollador > Confiar
+```
+
+Notas:
+- Verificado con **Xcode 26.6** sobre un iPad con **iPadOS 27**.
+- Con cuenta personal gratuita la app **caduca a los ~7 días**; reinstálala volviendo a correr el comando.
+- Para compilar en **Release** para este Mac ("My Mac (Designed for iPad)"): `npm run macos:release` (se ejecuta desde Xcode).
+- Evita tener corriendo otras apps con el bundle id `com.mispelis.app` (p. ej. la app Electron anterior) al lanzar en el Mac.
 
 ## ⚠️ Aviso legal
 

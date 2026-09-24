@@ -1,5 +1,20 @@
 # Changelog - misPelis
 
+## 1.6.0 — 13 de septiembre de 2026
+
+### macOS — Soporte "Designed for iPad"
+- La app ahora puede compilarse y ejecutarse en Macs con **Apple Silicon** usando el binario de iPadOS (destino "My Mac (Designed for iPad)" de Xcode)
+- Nuevo script **`npm run macos:install`**: compila Release (JS embebido, sin Metro), crea el *wrapper* iOS-on-Mac que macOS requiere, lo instala en `~/Applications` y lo registra en Launchpad/Spotlight. Se abre como cualquier app, **sin abrir Xcode**
+- Nuevo script `npm run macos` (Debug) y `npm run macos:release` (Release) que compilan con `xcodebuild` para el destino Mac con firma automática (`-allowProvisioningUpdates`)
+- Nuevo script `npm run macos:xcode` para abrir el workspace en Xcode y ejecutar desde ahí
+- Documentación en el README con requisitos (Mac Apple Silicon + Xcode) y el flujo de ejecución
+- Nota: no es un target macOS nativo; con cuenta personal gratuita el perfil caduca a los ~7 días (re-ejecutar `npm run macos:install`)
+
+### iPad — Build Release standalone
+- Nuevo script `npm run ipad:release` que compila en Release (JS embebido, sin Metro) con `xcodebuild` y lo instala en el iPad por `devicectl`
+- Verificado con **Xcode 26.6** instalando y ejecutando en un iPad con **iPadOS 27** (requiere confiar el perfil de desarrollador en el iPad)
+- Documentación del flujo y de la caducidad de ~7 días con cuenta personal gratuita
+
 ## 1.5.3 — 13 de septiembre de 2026
 
 ### Favoritos — Estado compartido entre pantallas
